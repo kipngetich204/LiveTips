@@ -16,6 +16,7 @@ import { Premium } from "./pages/Premium";
 import { AdminDashboard } from "./components/Admin/AdminDashboard";
 import { PrivateRoute } from "./services/Private";
 import { NotFound } from "./pages/NotFound";
+import { LiveScore } from "./pages/Livescore";
 
 type ModalType = "signin" | "signup" | "reset" | null;
 
@@ -62,6 +63,7 @@ export default function App() {
           <Route path="/" element={<Home />} />
           <Route path="/tips" element={<Tips />} />
           <Route path="/premium" element={<Premium/>} />
+          <Route path="/livescore" element={<LiveScore/>} />
           <Route
             path="/admin"
             element={

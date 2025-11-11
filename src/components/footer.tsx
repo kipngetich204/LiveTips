@@ -2,20 +2,20 @@ import { FaTwitter, FaFacebookF, FaInstagram, FaYoutube } from "react-icons/fa";
 
 export function Footer() {
   return (
-    <footer className="bg-gray-900 text-gray-300 py-12 mt-10">
+    <footer className="bg-gray-900 text-gray-300 py-12 mt-5">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Top Section */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 border-b border-gray-700 pb-10">
+        <div className="grid grid-cols-1  md:grid-cols-4 gap-8 border-b border-gray-700 pb-10">
           {/* Logo & About */}
           <div>
             <a href="/" className="flex items-center space-x-3 mb-4">
               <div className="h-10 w-10 bg-yellow-400 rounded-full flex items-center justify-center text-black font-bold text-lg">
-                P
+                l
               </div>
-              <span className="font-bold text-xl text-white">Predict</span>
+              <span className="font-bold text-xl text-white">Live Tips</span>
             </a>
             <p className="text-sm text-gray-400 leading-relaxed">
-              Predict helps you stay ahead of the game with live scores, insights,
+              Live Tips helps you stay ahead of the game with live scores, insights,
               and premium match analysis.
             </p>
           </div>

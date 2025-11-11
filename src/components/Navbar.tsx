@@ -59,18 +59,23 @@ export const Navbar: React.FC<NavbarProps> = ({
   }, []);
 
   // Auto-close mobile menu on outside click
-  useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
-      if (
-        mobileMenuRef.current &&
-        !mobileMenuRef.current.contains(e.target as Node)
-      ) {
-        setIsOpen(false);
-      }
+const toggleButtonRef = useRef<HTMLButtonElement>(null);
+
+useEffect(() => {
+  function handleClickOutside(e: MouseEvent) {
+    if (
+      mobileMenuRef.current &&
+      !mobileMenuRef.current.contains(e.target as Node) &&
+      toggleButtonRef.current &&
+      !toggleButtonRef.current.contains(e.target as Node)
+    ) {
+      setIsOpen(false);
     }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  }
+  document.addEventListener("mousedown", handleClickOutside);
+  return () => document.removeEventListener("mousedown", handleClickOutside);
+}, []);
+
 
   return (
     <nav
@@ -177,10 +182,10 @@ export const Navbar: React.FC<NavbarProps> = ({
                   >
                     <div className="bg-gradient-to-r from-yellow-400 to-amber-500 px-4 py-4">
                       <p className="font-bold text-slate-900 text-lg">
-                        {currentUser?.email || "User"}
+                        {currentUser?.email}
                       </p>
                       <p className="text-sm text-slate-700 truncate">
-                        {currentUser?.email || "user@example.com"}
+                        {currentUser?.email}
                       </p>
                     </div>
 
@@ -240,6 +245,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           {/* ===== MOBILE TOGGLE ===== */}
           <button
+            ref={toggleButtonRef}
             className="md:hidden text-yellow-400 focus:outline-none p-2 hover:bg-white/5 rounded-lg transition-all"
             onClick={() => setIsOpen(!isOpen)}
           >
@@ -266,6 +272,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               )}
             </svg>
           </button>
+
         </div>
       </div>
 
@@ -273,7 +280,7 @@ export const Navbar: React.FC<NavbarProps> = ({
       {isOpen && (
         <div
           ref={mobileMenuRef}
-          className="md:hidden bg-slate-900 border-t border-slate-700 shadow-xl animate-in slide-in-from-top duration-200"
+          className="md:hidden top-10 bg-slate-900 border-t border-slate-700 shadow-xl animate-in slide-in-from-top  duration-200"
         >
           <ul className="flex flex-col py-4 space-y-1 px-4">
             {navLinks

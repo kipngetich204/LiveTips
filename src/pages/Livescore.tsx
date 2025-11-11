@@ -1,11 +1,14 @@
+
+
 export function LiveScore() {
+  
   const liveMatches = [
     { id: 1, teams: "Barcelona vs Real Madrid", score: "2 - 1", time: "78’" },
     { id: 2, teams: "Man City vs Arsenal", score: "0 - 0", time: "45’" },
   ];
 
   return (
-    <section className="py-16 bg-gray-900 text-white min-h-[70vh]">
+    <section className="py-16 mt-12 bg-gray-900 text-white min-h-[70vh]">
       <div className="max-w-5xl mx-auto px-4">
         <h2 className="text-3xl font-bold mb-8 text-yellow-400">Live Scores</h2>
         <div className="space-y-4">

@@ -2,7 +2,6 @@ import { useState } from "react";
 import { tipsList } from "../pages/Tips";
 import type { Tiptype } from "../Home/RightBar";
 
-
 export const MarketsSidebar = () => {
   const markets = ["Over 2.5 Goals", "GG", "1X2", "Handicap", "BTTS"];
   const [activeMarket, setActiveMarket] = useState<string | null>(null);
@@ -12,49 +11,87 @@ export const MarketsSidebar = () => {
     ? tipsList.filter((tip) => tip.markets === activeMarket)
     : tipsList;
 
-  const handleClick = (markets: string) => {
-    setActiveMarket((prev) => (prev === markets ? null : markets));
+  const handleClick = (market: string) => {
+    setActiveMarket((prev) => (prev === market ? null : market));
   };
 
   return (
-    <div className="bg-gray-800 rounded-lg p-4 sticky top-16 h-[calc(100vh-4rem)] overflow-y-auto">
-      <h2 className="text-yellow-400 font-bold mb-4">Markets</h2>
+    <div className="bg-gray-800 rounded-lg p-3 md:p-4 w-full">
+      {/* Header */}
+      <h2 className="text-yellow-400 font-bold text-lg md:text-xl mb-3 md:mb-4">
+        Markets
+      </h2>
 
-      {/* Markets List */}
-      <ul className="space-y-2 text-gray-300 mb-6">
-        {markets.map((market) => (
-          <li
-            key={market}
-            onClick={() => handleClick(market)}
-            className={`cursor-pointer px-2 py-1 rounded transition ${
-              activeMarket === market
-                ? "bg-yellow-400 text-black font-semibold"
-                : "hover:text-yellow-400"
-            }`}
-          >
-            {market}
-          </li>
-        ))}
-      </ul>
+      {/* Markets List - Horizontal scroll on mobile, vertical on desktop */}
+      <div className="mb-4 md:mb-6">
+        {/* Mobile: Horizontal scrollable chips */}
+        <div className="flex md:hidden gap-2 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-700">
+          {markets.map((market) => (
+            <button
+              key={market}
+              onClick={() => handleClick(market)}
+              className={`flex-shrink-0 px-3 py-2 rounded-lg text-sm font-medium transition whitespace-nowrap ${
+                activeMarket === market
+                  ? "bg-yellow-400 text-black font-semibold"
+                  : "bg-gray-700 text-gray-300 hover:bg-gray-600"
+              }`}
+            >
+              {market}
+            </button>
+          ))}
+        </div>
 
-      {/* Today’s Tips filtered by market */}
+        {/* Desktop: Vertical list */}
+        <ul className="hidden md:block space-y-2 text-gray-300">
+          {markets.map((market) => (
+            <li
+              key={market}
+              onClick={() => handleClick(market)}
+              className={`cursor-pointer px-3 py-2 rounded transition ${
+                activeMarket === market
+                  ? "bg-yellow-400 text-black font-semibold"
+                  : "hover:text-yellow-400 hover:bg-gray-700"
+              }`}
+            >
+              {market}
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      {/* Clear Filter Button */}
+      {activeMarket && (
+        <button
+          onClick={() => setActiveMarket(null)}
+          className="w-full mb-4 px-3 py-2 text-sm text-gray-400 hover:text-yellow-400 bg-gray-700 hover:bg-gray-600 rounded transition"
+        >
+          Clear Filter
+        </button>
+      )}
+
+      {/* Filtered Tips Section */}
       <div>
-        <h3 className="text-yellow-400 font-semibold mb-3 text-center">
+        <h3 className="text-yellow-400 font-semibold text-sm md:text-base mb-3 text-center">
           {activeMarket ? `Tips: ${activeMarket}` : "All Tips"}
         </h3>
+        
         {filteredTips.length === 0 ? (
-          <p className="text-gray-400 text-sm text-center">No tips available</p>
+          <p className="text-gray-400 text-xs md:text-sm text-center py-4">
+            No tips available
+          </p>
         ) : (
-          <ul className="space-y-2">
+          <ul className="space-y-2 max-h-[400px] md:max-h-[500px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-700">
             {filteredTips.map((tip) => (
               <li
                 key={tip.id}
-                className="bg-gray-700 p-2 rounded hover:bg-gray-600 transition text-sm"
+                className="bg-gray-700 p-2 md:p-3 rounded hover:bg-gray-600 transition"
               >
-                <p className="text-yellow-300 font-semibold">
+                <p className="text-yellow-300 font-semibold text-xs md:text-sm">
                   {tip.homeTeam} vs {tip.awayTeam}
                 </p>
-                <p className="text-gray-300">{tip.prediction}</p>
+                <p className="text-gray-300 text-xs md:text-sm mt-1">
+                  {tip.prediction}
+                </p>
               </li>
             ))}
           </ul>
