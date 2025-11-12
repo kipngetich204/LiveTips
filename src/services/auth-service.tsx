@@ -28,7 +28,7 @@ export class AuthService {
       name: firebaseUser.displayName || firebaseUser.email?.split('@')[0] || 'User',
       email: firebaseUser.email || '',
       avatar: firebaseUser.photoURL || firebaseUser.email?.charAt(0).toUpperCase() || 'U',
-      photoURL: firebaseUser.photoURL || undefined,
+      photoURL: firebaseUser.photoURL || 'missing',
       isAdmin: userData.isAdmin || false,
       emailVerified: firebaseUser.emailVerified,
       provider: firebaseUser.providerData[0]?.providerId.includes('google') ? 'google' : 'email',

@@ -3,6 +3,7 @@ import { useAuth } from "../context/AuthContext";
 import { getDocs, collection } from "firebase/firestore";
 import { db } from "../FirebaseConfig/firebase";
 import type { Tiptype } from "../types/tips";
+import { LoadingPage } from "./Loading";
 
 // ✅ Fetch tips from Firestore
 async function getTips(): Promise<Tiptype[]> {
@@ -38,14 +39,14 @@ export const Tips = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-900">
-        <p className="text-yellow-400 text-lg animate-pulse">Loading tips...</p>
-      </div>
-    );
+      <>
+      <LoadingPage/>
+      </>
+    )
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white p-4 sm:p-6">
+    <div className="min-h-screen bg-gray-900 mt-16  text-white p-4 sm:p-6">
       <div className="max-w-6xl mx-auto">
         <h2 className="text-2xl sm:text-3xl font-bold text-yellow-400 mb-6 text-center">
           Today’s Betting Tips
