@@ -40,8 +40,8 @@ export const LiveScore: React.FC = () => {
   }, []);
 
   if (loading) return <LoadingPage />;
-  if (error) return <p className="text-center mt-10 text-red-500">{error}</p>;
-
+  if (error) return <ErrorPage message={error}/>
+  
   return (
     <div className="min-h-screen bg-gray-900 text-white pt-20 pb-6">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">

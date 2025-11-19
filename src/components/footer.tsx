@@ -1,8 +1,11 @@
 import { FaTwitter, FaFacebookF, FaInstagram, FaYoutube } from "react-icons/fa";
-
+//import { Marquee } from "../pages/marquue";
 export function Footer() {
   return (
+    <>
+   
     <footer className="bg-gray-900 text-gray-300 py-12 mt-5">
+       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Top Section */}
         <div className="grid grid-cols-1  md:grid-cols-4 gap-8 border-b border-gray-700 pb-10">
@@ -101,5 +104,6 @@ export function Footer() {
         </div>
       </div>
     </footer>
+    </>
   );
 }

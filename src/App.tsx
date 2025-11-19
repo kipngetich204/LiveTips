@@ -2,23 +2,23 @@ import { Navbar } from "./components/Navbar";
 import { useState, useEffect } from "react";
 import { useAuth } from "./hooks/useAuth";
 import { AuthService } from "./services/auth-service";
-//import { SignIn, SignUp, ResetPassword } from "./components";
-import {SignIn} from "./components/signIn";
+import { SignIn } from "./components/signIn";
 import { SignUp } from "./components/signUp";
-import {ResetPassword} from "./components/ResetPassword";
+import { ResetPassword } from "./components/ResetPassword";
 import { Tips } from "./pages/Tips";
 import { Footer } from "./components/footer";
 import type { User } from "./types/user";
 import './index.css'
-import { Routes,Route } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import { Home } from "./components/Home";
 import { Premium } from "./pages/Premium";
 import { AdminDashboard } from "./components/Admin/AdminDashboard";
 import { PrivateRoute } from "./services/Private";
 import { NotFound } from "./pages/NotFound";
 import { LiveScore } from "./pages/Livescore";
-import {Marquee} from "./pages/marquue";
+import { Marquee } from "./pages/marquue";
 import { Logo } from "./assets/logo";
+//import { ErrorPage } from "./pages/Error";
 
 type ModalType = "signin" | "signup" | "reset" | null;
 
@@ -26,7 +26,6 @@ export default function App() {
   const { user, loading } = useAuth();
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [activeModal, setActiveModal] = useState<ModalType>(null);
-  //const [sessionTime, setSessionTime] = useState<string>("0s");
 
   useEffect(() => {
     if (user) {
@@ -38,7 +37,6 @@ export default function App() {
       return () => clearInterval(interval);
     } else {
       setCurrentUser(null);
-  // setSessionTime("0s");
     }
   }, [user]);
 
@@ -57,26 +55,17 @@ export default function App() {
     setCurrentUser(null);
   };
 
-  if (loading) return <Logo />;
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-black">
+        <Logo />
+      </div>
+    );
+  }
 
   return (
     <>
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/tips" element={<Tips />} />
-          <Route path="/premium" element={<Premium/>} />
-          <Route path="/livescore" element={<LiveScore/>} />
-          <Route
-            path="/admin"
-            element={
-              <PrivateRoute requireAdmin={true}>
-                <AdminDashboard />
-              </PrivateRoute>
-            }
-          /> 
-          {/* Catch-all 404 route */}
-          <Route path="*" element={<NotFound />} />   
-        </Routes>
+      {/* Navbar - Always at the top */}
       <Navbar
         currentUser={currentUser}
         isLoggedIn={!!currentUser}
@@ -85,9 +74,35 @@ export default function App() {
         onLogout={handleSignOut}
       />
 
+      {/* Main Content - Add padding to account for fixed navbar */}
+      <main className="pt-16 md:pt-20 min-h-screen">
+        {/* Marquee - Appears on all pages */}
+        
+        
+        {/* Page Routes */}
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/basic" element={<Tips />} />
+          <Route path="/premium" element={<Premium />} />
+          <Route path="/livescore" element={<LiveScore />} />
+          <Route
+            path="/admin"
+            element={
+              <PrivateRoute requireAdmin={true}>
+                <AdminDashboard />
+              </PrivateRoute>
+            }
+          />
+          {/* Catch-all 404 route */}
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </main>
       
+          <Marquee />
+      {/* Footer - Always at the bottom */}
+      <Footer />
 
-      {/* Modals */}
+      {/* Modals - Appear above everything */}
       {activeModal === "signin" && (
         <SignIn
           onSwitchToSignUp={() => setActiveModal("signup")}
@@ -109,9 +124,6 @@ export default function App() {
           onClose={() => setActiveModal(null)}
         />
       )}
-      <Marquee/>
-
-        <Footer/>
     </>
   );
 }

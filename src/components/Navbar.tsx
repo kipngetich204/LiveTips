@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import type { User } from "../types/user";
-
+import { Logo } from "../assets/logo";
 interface NavbarProps {
   isLoggedIn: boolean;
   onLoginClick: () => void;
@@ -79,7 +79,7 @@ useEffect(() => {
 
   return (
     <nav
-      className={`w-full bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 text-white shadow-lg fixed top-0 left-0  transition-all duration-300 ${
+      className={`w-full bg-gradient-to-r  from-slate-900 via-slate-800 to-slate-900 text-white shadow-lg fixed top-0 left-0  transition-all duration-300 ${
         scrolled ? "py-2 backdrop-blur-md bg-opacity-95" : "py-3"
       }`}
     >
@@ -90,7 +90,7 @@ useEffect(() => {
             to="/"
             className="flex items-center space-x-3 group transition-transform hover:scale-105"
           >
-              <img className="h-10 w-10 rounded-full *:  " src="src/assets/logo.png" alt="live tips" />
+            <Logo variant="navbar" logoText="LT" color="#6366F1" />
             <span className="font-bold text-xl bg-gradient-to-r from-yellow-400 to-amber-400 bg-clip-text text-transparent">
               LIVE TIPS
             </span>
