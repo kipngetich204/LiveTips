@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { type FullFixture } from "../types/livescore";
 import { LoadingPage } from "./Loading";
+import { ErrorPage } from "./Error";
 
 export const LiveScore: React.FC = () => {
   const [fixtures, setFixtures] = useState<FullFixture[]>([]);
@@ -23,14 +24,17 @@ export const LiveScore: React.FC = () => {
         const res = await fetch(`https://football-project-backend-cv2j.onrender.com/fixtures`);
         if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
         const data: FullFixture[] = await res.json();
+        console.log(data)
         setFixtures(data);
       } catch (err: any) {
         console.error(err);
         setError(err.message || "Error fetching fixtures");
+        return <ErrorPage message={error || "Error fetching fixtures"} />;
       } finally {
         setLoading(false);
       }
     };
+    console.log(fixtures)
 
     fetchFixtures();
   }, []);
@@ -46,14 +50,14 @@ export const LiveScore: React.FC = () => {
           <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-center mb-2">
             Football Fixtures
           </h1>
-          <p className="text-center text-gray-400 text-sm sm:text-base">
+         {/*} <p className="text-center text-gray-400 text-sm sm:text-base">
             {new Date("2025-11-16").toLocaleDateString("en-US", {
               weekday: "long",
               year: "numeric",
               month: "long",
               day: "numeric",
             })}
-          </p>
+          </p>*/}
           <p className="text-center text-yellow-400 text-sm mt-2">
             {fixtures.length === 1 ? "match" : "matches"}
           </p>

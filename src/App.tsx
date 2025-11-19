@@ -17,6 +17,8 @@ import { AdminDashboard } from "./components/Admin/AdminDashboard";
 import { PrivateRoute } from "./services/Private";
 import { NotFound } from "./pages/NotFound";
 import { LiveScore } from "./pages/Livescore";
+import {Marquee} from "./pages/marquue";
+import { Logo } from "./assets/logo";
 
 type ModalType = "signin" | "signup" | "reset" | null;
 
@@ -55,7 +57,7 @@ export default function App() {
     setCurrentUser(null);
   };
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) return <Logo />;
 
   return (
     <>
@@ -107,6 +109,8 @@ export default function App() {
           onClose={() => setActiveModal(null)}
         />
       )}
+      <Marquee/>
+
         <Footer/>
     </>
   );

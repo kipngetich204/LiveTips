@@ -1,12 +1,22 @@
-import { useState } from 'react';
+import {  useState } from 'react';
 import { MarketsSidebar } from "../Home/LeftBar";
-import { TodayTips } from "../Home/CenterBar";
+//import { TodayTips } from "../Home/CenterBar";
 import { YesterdayTips } from "../Home/RightBar";
-import { tipsList } from "../pages/Tips";
-import type { Tiptype } from "../Home/RightBar";
+//import { getTips } from "../pages/Tips";
+//import type { Tiptype } from "../Home/RightBar";
+import { Tips } from '../pages/Tips';
 
 export const Home = () => {
   const [activeTab, setActiveTab] = useState('today');
+/*     const [tipsList, setTipsList] = useState<Tiptype[]>([]);
+    // Fetch tips on component mount
+    useEffect(() => {
+      const fetchTips = async () => {
+        const tips = await getTips();
+        setTipsList(tips);
+      };
+      fetchTips();
+    }, []); */
 
   return (
     <div className="w-full min-h-screen mt-16 bg-gray-900 text-white">
@@ -50,7 +60,7 @@ export const Home = () => {
 
         {/* Mobile Tab Content */}
         <div className="md:hidden px-4 py-6">
-          {activeTab === 'today' && <TodayTips tips={tipsList as Tiptype[]} />}
+          {activeTab === 'today' && <Tips />}
           {activeTab === 'markets' && <MarketsSidebar />}
           {activeTab === 'yesterday' && <YesterdayTips />}
         </div>
@@ -65,7 +75,7 @@ export const Home = () => {
 
           {/* Center - Today's Tips */}
           <div className="md:col-span-8 overflow-y-auto max-h-[calc(100vh-8rem)] scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-800 hover:scrollbar-thumb-gray-600">
-            <TodayTips tips={tipsList as Tiptype[]} />
+            <Tips />
           </div>
 
           {/* Right Sidebar - Yesterday's Tips */}

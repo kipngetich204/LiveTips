@@ -1,5 +1,5 @@
-
-import { tipsList } from "../pages/Tips";
+import { useEffect, useState } from "react";
+import { getTips } from "../pages/Tips";
 
 
 
@@ -21,6 +21,16 @@ export interface Tiptype {
 
 
 export const YesterdayTips = () => {
+    const [tipsList, setTipsList] = useState<Tiptype[]>([]);
+  // Fetch tips on component mount
+  useEffect(() => {
+    const fetchTips = async () => {
+      const tips = await getTips();
+      setTipsList(tips);
+    };
+    fetchTips();
+  }, []);
+
   return (
     <div className="bg-gray-800 rounded-lg p-4 sticky top-16 h-[calc(100vh-4rem)] overflow-y-auto">
       <h2 className="text-yellow-400 font-bold mb-4 text-center">Yesterday's Results</h2>

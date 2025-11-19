@@ -1,10 +1,19 @@
-import { useState } from "react";
-import { tipsList } from "../pages/Tips";
+import { useEffect, useState } from "react";
+import {getTips } from "../pages/Tips";
 import type { Tiptype } from "../Home/RightBar";
 
 export const MarketsSidebar = () => {
   const markets = ["Over 2.5 Goals", "GG", "1X2", "Handicap", "BTTS"];
   const [activeMarket, setActiveMarket] = useState<string | null>(null);
+  const [tipsList, setTipsList] = useState<Tiptype[]>([]);
+  // Fetch tips on component mount
+  useEffect(() => {
+    const fetchTips = async () => {
+      const tips = await getTips();
+      setTipsList(tips);
+    };
+    fetchTips();
+  }, []);
 
   // Filter tips based on selected market
   const filteredTips: Tiptype[] = activeMarket

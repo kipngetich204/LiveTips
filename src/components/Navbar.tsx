@@ -90,11 +90,9 @@ useEffect(() => {
             to="/"
             className="flex items-center space-x-3 group transition-transform hover:scale-105"
           >
-            <div className="h-10 w-10 bg-gradient-to-br from-yellow-400 to-amber-500 rounded-xl flex items-center justify-center text-slate-900 font-bold text-xl shadow-lg group-hover:shadow-yellow-400/50 transition-all">
-              P
-            </div>
+              <img className="h-10 w-10 rounded-full *:  " src="src/assets/logo.png" alt="live tips" />
             <span className="font-bold text-xl bg-gradient-to-r from-yellow-400 to-amber-400 bg-clip-text text-transparent">
-              Predict
+              LIVE TIPS
             </span>
           </NavLink>
 
