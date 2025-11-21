@@ -75,7 +75,7 @@ export default function App() {
       />
 
       {/* Main Content - Add padding to account for fixed navbar */}
-      <main className="pt-16 md:pt-20 min-h-screen">
+      <main className=" border-t-red-200 pt-4 md:pt-20 min-h-screen">
         {/* Marquee - Appears on all pages */}
         
         

@@ -208,7 +208,7 @@ export const Tips = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 mt-16 text-white p-4 sm:p-6">
+    <div className="min-h-screen bg-gray-900  text-white p-4 sm:p-6">
       <div className="max-w-6xl mx-auto">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl sm:text-3xl font-bold text-yellow-400 text-center flex-1">
