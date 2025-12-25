@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../../context/AuthContext";
 import { getDocs, collection, doc, updateDoc } from "firebase/firestore";
-import { db } from "../FirebaseConfig/firebase";
-import type { Tiptype } from "../types/tips";
-import { type FullFixture } from "../types/livescore";
-import { LoadingPage } from "./Loading";
-import { ErrorPage } from "./Error";
+import { db } from "../../FirebaseConfig/firebase";
+import type { Tiptype } from "../../types/tips";
+import { type FullFixture } from "../../types/livescore";
+import { LoadingPage } from "../Loading";
+import { ErrorPage } from "../Error";
+import { testTips } from "../../testingData/tips";
+import { TipDetails } from "./TipDetails";
 
 // ✅ Fetch tips from Firestore
 export async function getTips(): Promise<Tiptype[]> {
@@ -18,11 +20,11 @@ export async function getTips(): Promise<Tiptype[]> {
 }
 
 // ✅ Fetch fixtures from API
-async function getFixtures(): Promise<FullFixture[]> {
+/* async function getFixtures(): Promise<FullFixture[]> {
   const res = await fetch(`https://football-project-backend-cv2j.onrender.com/fixtures`);
   if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
   return await res.json();
-}
+} */
 
 // ✅ Match prediction logic
 function checkPredictionResult(
@@ -93,19 +95,28 @@ export const Tips = () => {
   const [fixtures, setFixtures] = useState<FullFixture[]>([]);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
+  const [selectedTip, setSelectedTip] = useState<Tiptype | null>(null);
+  const [modalLoading, setModalLoading] = useState(false);
   console.log(typeof fixtures)
   useEffect(() => {
     const fetchAndUpdateData = async () => {
       try {
         setLoading(true);
         
-        // Fetch both tips and fixtures
-        const [tipsData, fixturesData] = await Promise.all([
-          getTips(),
-          getFixtures()
-        ]);
+        // Fetch tips from Firestore
+        const tipsData = await getTips();
+        
+        // Fetch fixtures from API - currently commented out, using testTips instead
+        // const [tipsData, fixturesData] = await Promise.all([
+        //   getTips(),
+        //   getFixtures()
+        // ]);
+        
+        // Using test data instead of API
+        const fixturesData = testTips as unknown as FullFixture[];
 
         setFixtures(fixturesData);
+        
 
         // Create a map of fixtures by ID for quick lookup
         const fixtureMap = new Map(
@@ -208,7 +219,7 @@ export const Tips = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-900  text-white p-4 sm:p-6">
+    <div className="w-full bg-gray-900 text-white p-4 sm:p-6">
       <div className="max-w-6xl mx-auto">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl sm:text-3xl font-bold text-yellow-400 text-center flex-1">
@@ -235,7 +246,14 @@ export const Tips = () => {
               {displayedTips.map((tip) => (
                 <div
                   key={tip.id}
-                  className="bg-gray-800 p-4 rounded-xl border border-gray-700 shadow-md"
+                  onClick={() => {
+                    setModalLoading(true);
+                    setTimeout(() => {
+                      setSelectedTip(tip);
+                      setModalLoading(false);
+                    }, 300);
+                  }}
+                  className="bg-gray-800 p-4 rounded-xl border border-gray-700 shadow-md cursor-pointer hover:border-yellow-400 hover:shadow-lg hover:bg-gray-750 transition-all"
                 >
                   <div className="flex justify-between items-center mb-2">
                     <h3 className="font-semibold text-yellow-300">
@@ -324,7 +342,14 @@ export const Tips = () => {
                   {displayedTips.map((tip, index) => (
                     <tr
                       key={tip.id}
-                      className={`hover:bg-gray-700 transition ${
+                      onClick={() => {
+                        setModalLoading(true);
+                        setTimeout(() => {
+                          setSelectedTip(tip);
+                          setModalLoading(false);
+                        }, 300);
+                      }}
+                      className={`hover:bg-gray-700 transition cursor-pointer ${
                         index % 2 === 0 ? "bg-gray-900" : "bg-gray-800"
                       }`}
                     >
@@ -399,6 +424,13 @@ export const Tips = () => {
             </div>
           </>
         )}
+
+        {/* Tip Details Modal */}
+        <TipDetails 
+          tip={selectedTip} 
+          isLoading={modalLoading} 
+          onClose={() => setSelectedTip(null)} 
+        />
 
         <div className="mt-6 text-center space-y-2">
           <p className="text-sm text-gray-400">

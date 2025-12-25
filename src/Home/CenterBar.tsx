@@ -7,7 +7,7 @@ interface TodayTipsProps {
 
 export const TodayTips = ({ tips }: TodayTipsProps) => {
   return (
-    <div className="bg-gray-800 rounded-lg p-4">
+    <div className="bg-gray-800 rounded-lg pt-0 p-4">
       <h2 className="text-yellow-400 font-bold mb-4 text-center">Today's Tips</h2>
       {tips.length === 0 ? (
         <p className="text-gray-300 text-center">No tips available today.</p>

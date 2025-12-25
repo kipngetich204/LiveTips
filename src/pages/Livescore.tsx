@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { type FullFixture } from "../types/livescore";
 import { LoadingPage } from "./Loading";
 import { ErrorPage } from "./Error";
+import { mockLivescore } from "../testingData/livescore";
 
 export const LiveScore: React.FC = () => {
   const [fixtures, setFixtures] = useState<FullFixture[]>([]);
@@ -20,12 +21,14 @@ export const LiveScore: React.FC = () => {
   useEffect(() => {
     const fetchFixtures = async () => {
       try {
-
-        const res = await fetch(`https://football-project-backend-cv2j.onrender.com/fixtures`);
-        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-        const data: FullFixture[] = await res.json();
-        console.log(data)
-        setFixtures(data);
+        // API fetch commented out - using mock data instead
+        // const res = await fetch(`https://football-project-backend-cv2j.onrender.com/fixtures`);
+        // if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+        // const data: FullFixture[] = await res.json();
+        // setFixtures(data);
+        
+        // Using mock livescore data
+        setFixtures(mockLivescore);
       } catch (err: any) {
         console.error(err);
         setError(err.message || "Error fetching fixtures");
@@ -43,7 +46,7 @@ export const LiveScore: React.FC = () => {
   if (error) return <ErrorPage message={error}/>
   
   return (
-    <div className="min-h-screen bg-gray-900 text-white pt-20 pb-6">
+    <div className="w-full bg-gray-900 text-white pb-6">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
         {/* Header */}
         <div className="mb-6 md:mb-8">

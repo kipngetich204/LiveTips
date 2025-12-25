@@ -1,70 +1,39 @@
 import React, { useState, type ChangeEvent, type KeyboardEvent } from "react";
-import { AuthService } from "../services/auth-service";
-import type { User } from "../types/user";
+import { AuthService } from "../../services/auth-service";
+import type { User } from "../../types/user";
 
-// ===================================
-// SIGN UP COMPONENT
-// ===================================
-
-interface SignUpProps {
-  onSwitchToSignIn: () => void;
-  onSignUp: (userData: User) => void;
+interface SignInProps {
+  onSwitchToSignUp: () => void;
+  onSwitchToResetPassword: () => void;
+  onSignIn: (userData: User) => void;
   onClose: () => void;
 }
 
-export const SignUp: React.FC<SignUpProps> = ({
-  onSwitchToSignIn,
-  onSignUp,
+export const SignIn: React.FC<SignInProps> = ({
+  onSwitchToSignUp,
+  onSwitchToResetPassword,
+  onSignIn,
   onClose,
 }) => {
-  const [formData, setFormData] = useState({
-    
-    email: "",
-    password: "",
-    confirmPassword: "",
-  });
-  const [agreedToTerms, setAgreedToTerms] = useState(false);
+  const [formData, setFormData] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
 
-  const validateForm = (): boolean => {
+  const handleEmailSignIn = async () => {
+    const { email, password } = formData;
 
-
-    if (!formData.email) {
-      setError("Please enter your email");
-      return false;
+    if (!email || !password) {
+      setError("Please enter your email and password");
+      return;
     }
-
-    if (formData.password.length < 8) {
-      setError("Password must be at least 8 characters");
-      return false;
-    }
-
-    if (formData.password !== formData.confirmPassword) {
-      setError("Passwords do not match");
-      return false;
-    }
-
-    if (!agreedToTerms) {
-      setError("You must agree to the Terms and Conditions");
-      return false;
-    }
-
-    return true;
-  };
-
-  const handleEmailSignUp = async () => {
-    if (!validateForm()) return;
 
     setLoading(true);
     setError("");
 
     try {
-      const userData = await AuthService.signUpWithEmail(
-        formData.email,
-        formData.password
-      );
-      onSignUp(userData);
+      const userData = await AuthService.signInWithEmail(email, password);
+      onSignIn(userData);
       onClose();
     } catch (err: any) {
       setError(err.message);
@@ -73,18 +42,13 @@ export const SignUp: React.FC<SignUpProps> = ({
     }
   };
 
-  const handleGoogleSignUp = async () => {
-    if (!agreedToTerms) {
-      setError("You must agree to the Terms and Conditions");
-      return;
-    }
-
+  const handleGoogleSignIn = async () => {
     setLoading(true);
     setError("");
 
     try {
       const userData = await AuthService.signInWithGoogle();
-      onSignUp(userData);
+      onSignIn(userData);
       onClose();
     } catch (err: any) {
       setError(err.message);
@@ -95,28 +59,31 @@ export const SignUp: React.FC<SignUpProps> = ({
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
-    setError("");
+    setError(""); // Clear error on input change
   };
 
   const handleKeyPress = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && !loading) {
-      handleEmailSignUp();
+      handleEmailSignIn();
     }
   };
 
   return (
     <>
+      {/* Backdrop */}
       <div
         className="fixed inset-0 bg-black bg-opacity-50 z-40"
         onClick={onClose}
       />
 
+      {/* Modal */}
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
-        <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-8 pointer-events-auto relative max-h-[90vh] overflow-y-auto">
+        <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-8 pointer-events-auto relative">
+          {/* Close Button */}
           <button
             onClick={onClose}
-            disabled={loading}
             className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition"
+            disabled={loading}
           >
             <svg
               className="w-6 h-6"
@@ -133,13 +100,15 @@ export const SignUp: React.FC<SignUpProps> = ({
             </svg>
           </button>
 
+          {/* Header */}
           <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold text-gray-800">Create Account</h2>
-            <p className="text-gray-600 mt-2">Sign up to get started</p>
+            <h2 className="text-3xl font-bold text-gray-800">Welcome Back</h2>
+            <p className="text-gray-600 mt-2">Sign in to your account</p>
           </div>
 
+          {/* Google Sign In Button */}
           <button
-            onClick={handleGoogleSignUp}
+            onClick={handleGoogleSignIn}
             disabled={loading}
             className="w-full flex items-center justify-center gap-3 bg-white border-2 border-gray-300 text-gray-700 py-3 rounded-lg font-semibold hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed mb-6"
           >
@@ -161,23 +130,23 @@ export const SignUp: React.FC<SignUpProps> = ({
                 d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
               />
             </svg>
-            {loading ? "Creating account..." : "Continue with Google"}
+            {loading ? "Signing in..." : "Continue with Google"}
           </button>
 
+          {/* Divider */}
           <div className="relative mb-6">
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-gray-300"></div>
             </div>
             <div className="relative flex justify-center text-sm">
               <span className="px-2 bg-white text-gray-500">
-                Or sign up with email
+                Or continue with email
               </span>
             </div>
           </div>
 
-          <div className="space-y-4">
-
-
+          {/* Email/Password Form */}
+          <div className="space-y-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Email Address
@@ -189,7 +158,7 @@ export const SignUp: React.FC<SignUpProps> = ({
                 onChange={handleChange}
                 onKeyPress={handleKeyPress}
                 disabled={loading}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-transparent outline-none transition disabled:bg-gray-100"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-transparent outline-none transition disabled:bg-gray-100 disabled:cursor-not-allowed"
                 placeholder="you@example.com"
                 autoComplete="email"
               />
@@ -206,70 +175,43 @@ export const SignUp: React.FC<SignUpProps> = ({
                 onChange={handleChange}
                 onKeyPress={handleKeyPress}
                 disabled={loading}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-transparent outline-none transition disabled:bg-gray-100"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-transparent outline-none transition disabled:bg-gray-100 disabled:cursor-not-allowed"
                 placeholder="••••••••"
-                autoComplete="new-password"
-              />
-              <p className="text-xs text-gray-500 mt-1">
-                Minimum 8 characters
-              </p>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Confirm Password
-              </label>
-              <input
-                type="password"
-                name="confirmPassword"
-                value={formData.confirmPassword}
-                onChange={handleChange}
-                onKeyPress={handleKeyPress}
-                disabled={loading}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-transparent outline-none transition disabled:bg-gray-100"
-                placeholder="••••••••"
-                autoComplete="new-password"
+                autoComplete="current-password"
               />
             </div>
 
+            {/* Error Message */}
             {error && (
               <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
                 {error}
               </div>
             )}
 
-            <div>
-              <label className="flex items-start cursor-pointer">
+            {/* Remember Me & Forgot Password */}
+            <div className="flex items-center justify-between">
+              <label className="flex items-center cursor-pointer">
                 <input
                   type="checkbox"
-                  checked={agreedToTerms}
-                  onChange={(e) => setAgreedToTerms(e.target.checked)}
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
                   disabled={loading}
-                  className="w-4 h-4 text-yellow-400 border-gray-300 rounded focus:ring-yellow-400 mt-1"
+                  className="w-4 h-4 text-yellow-400 border-gray-300 rounded focus:ring-yellow-400 disabled:cursor-not-allowed"
                 />
-                <span className="ml-2 text-sm text-gray-600">
-                  I agree to the{" "}
-                  <a
-                    href="/terms"
-                    target="_blank"
-                    className="text-yellow-600 hover:text-yellow-700 font-medium"
-                  >
-                    Terms and Conditions
-                  </a>{" "}
-                  and{" "}
-                  <a
-                    href="/privacy"
-                    target="_blank"
-                    className="text-yellow-600 hover:text-yellow-700 font-medium"
-                  >
-                    Privacy Policy
-                  </a>
-                </span>
+                <span className="ml-2 text-sm text-gray-600">Remember me</span>
               </label>
+              <button
+                onClick={onSwitchToResetPassword}
+                disabled={loading}
+                className="text-sm text-yellow-600 hover:text-yellow-700 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Forgot password?
+              </button>
             </div>
 
+            {/* Sign In Button */}
             <button
-              onClick={handleEmailSignUp}
+              onClick={handleEmailSignIn}
               disabled={loading}
               className="w-full bg-yellow-400 text-black py-3 rounded-lg font-semibold hover:bg-yellow-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
@@ -295,22 +237,23 @@ export const SignUp: React.FC<SignUpProps> = ({
                       d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                     ></path>
                   </svg>
-                  Creating account...
+                  Signing in...
                 </>
               ) : (
-                "Create Account"
+                "Sign In"
               )}
             </button>
           </div>
 
-          <p className="mt-6 text-center text-sm text-gray-600">
-            Already have an account?{" "}
+          {/* Sign Up Link */}
+          <p className="mt-8 text-center text-sm text-gray-600">
+            Don't have an account?{" "}
             <button
-              onClick={onSwitchToSignIn}
+              onClick={onSwitchToSignUp}
               disabled={loading}
-              className="text-yellow-600 hover:text-yellow-700 font-semibold"
+              className="text-yellow-600 hover:text-yellow-700 font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Sign in
+              Sign up
             </button>
           </p>
         </div>
@@ -318,7 +261,3 @@ export const SignUp: React.FC<SignUpProps> = ({
     </>
   );
 };
-
-// ===================================
-// RESET PASSWORD COMPONENT
-// ===================================

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Sidebar } from "./SideBar";
 import { Header } from "./Header";
 import { UsersTable } from "./UsersTable";
-import { TipsTable } from "./TipsTable";
+import { TipsTable } from "../../pages/Tips/TipsTable";
 import { TransactionsTable } from "./TransactionsTable";
 import { RevenueCard } from "./RevenueCard";
 import { AnalyticsGraph } from "./AnalyticsGraph";

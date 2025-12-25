@@ -2,16 +2,16 @@ import { Navbar } from "./components/Navbar";
 import { useState, useEffect } from "react";
 import { useAuth } from "./hooks/useAuth";
 import { AuthService } from "./services/auth-service";
-import { SignIn } from "./components/signIn";
-import { SignUp } from "./components/signUp";
-import { ResetPassword } from "./components/ResetPassword";
-import { Tips } from "./pages/Tips";
+import { SignIn } from "./components/Authentication/signIn";
+import { SignUp } from "./components/Authentication/signUp";
+import { ResetPassword } from "./components/Authentication/ResetPassword";
+import { Tips } from "./pages/Tips/Tips";
 import { Footer } from "./components/footer";
 import type { User } from "./types/user";
 import './index.css'
 import { Routes, Route } from "react-router-dom";
 import { Home } from "./components/Home";
-import { Premium } from "./pages/Premium";
+import { Premium } from "./pages/Tips/Premium";
 import { AdminDashboard } from "./components/Admin/AdminDashboard";
 import { PrivateRoute } from "./services/Private";
 import { NotFound } from "./pages/NotFound";
@@ -73,9 +73,9 @@ export default function App() {
         onSignUpClick={() => setActiveModal("signup")}
         onLogout={handleSignOut}
       />
-
+      <div className="h-2 md:h-2 bg-white"></div>
       {/* Main Content - Add padding to account for fixed navbar */}
-      <main className=" border-t-red-200 pt-4 md:pt-20 min-h-screen">
+      <main className="border-t-red-200 pt-16 md:pt-20 w-full">
         {/* Marquee - Appears on all pages */}
         
         
@@ -98,7 +98,7 @@ export default function App() {
         </Routes>
       </main>
       
-          <Marquee />
+      <Marquee />
       {/* Footer - Always at the bottom */}
       <Footer />
 

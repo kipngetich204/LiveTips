@@ -1,7 +1,9 @@
 import React, { useEffect, useRef, useState } from "react";
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink} from "react-router-dom";
 import type { User } from "../types/user";
 import { Logo } from "../assets/logo";
+import { ProfileDropdown } from "./ProfileDropdown";
+
 interface NavbarProps {
   isLoggedIn: boolean;
   onLoginClick: () => void;
@@ -25,13 +27,13 @@ export const Navbar: React.FC<NavbarProps> = ({
   onLogout,
   currentUser,
 }) => {
-  const navigate = useNavigate();
+  //const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const profileButtonRef = useRef<HTMLButtonElement>(null);
-  const profileMenuRef = useRef<HTMLDivElement>(null);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
+  const toggleButtonRef = useRef<HTMLButtonElement>(null);
 
   // Handle scroll effect
   useEffect(() => {
@@ -42,44 +44,25 @@ export const Navbar: React.FC<NavbarProps> = ({
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Auto-close profile dropdown on outside click
+  // Auto-close mobile menu on outside click
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
       if (
-        profileButtonRef.current &&
-        !profileButtonRef.current.contains(e.target as Node) &&
-        profileMenuRef.current &&
-        !profileMenuRef.current.contains(e.target as Node)
+        mobileMenuRef.current &&
+        !mobileMenuRef.current.contains(e.target as Node) &&
+        toggleButtonRef.current &&
+        !toggleButtonRef.current.contains(e.target as Node)
       ) {
-        setShowProfileMenu(false);
+        setIsOpen(false);
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Auto-close mobile menu on outside click
-const toggleButtonRef = useRef<HTMLButtonElement>(null);
-
-useEffect(() => {
-  function handleClickOutside(e: MouseEvent) {
-    if (
-      mobileMenuRef.current &&
-      !mobileMenuRef.current.contains(e.target as Node) &&
-      toggleButtonRef.current &&
-      !toggleButtonRef.current.contains(e.target as Node)
-    ) {
-      setIsOpen(false);
-    }
-  }
-  document.addEventListener("mousedown", handleClickOutside);
-  return () => document.removeEventListener("mousedown", handleClickOutside);
-}, []);
-
-
   return (
     <nav
-      className={`w-full bg-gradient-to-r  from-slate-900 via-slate-800 to-slate-900 text-white shadow-lg fixed top-0 left-0  transition-all duration-300 ${
+      className={`w-full bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 text-white shadow-lg fixed top-0 left-0 z-40 transition-all duration-300 ${
         scrolled ? "py-2 backdrop-blur-md bg-opacity-95" : "py-3"
       }`}
     >
@@ -144,17 +127,17 @@ useEffect(() => {
                   onClick={() => setShowProfileMenu(!showProfileMenu)}
                   className="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-white/5 transition-all duration-200 group"
                 >
-                <div className="w-9 h-9 rounded-full bg-gradient-to-br from-yellow-400 to-amber-500 flex items-center justify-center text-slate-900 font-bold shadow-lg group-hover:shadow-yellow-400/50 transition-all overflow-hidden">
-                  {currentUser?.avatar ? (
-                    <img 
-                      src={currentUser.avatar} 
-                      alt="Profile" 
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    "U"
-                  )}
-                </div>
+                  <div className="w-9 h-9 rounded-full bg-gradient-to-br from-yellow-400 to-amber-500 flex items-center justify-center text-slate-900 font-bold shadow-lg group-hover:shadow-yellow-400/50 transition-all overflow-hidden">
+                    {currentUser?.avatar ? (
+                      <img
+                        src={currentUser.avatar}
+                        alt="Profile"
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      "U"
+                    )}
+                  </div>
                   <svg
                     className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${
                       showProfileMenu ? "rotate-180" : ""
@@ -172,71 +155,14 @@ useEffect(() => {
                   </svg>
                 </button>
 
-                {/* ===== Profile Dropdown ===== */}
-                {showProfileMenu && (
-                  <div
-                    ref={profileMenuRef}
-                    className="absolute right-0 top-full mt-2 w-64 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200"
-                  >
-                    <div className="bg-gradient-to-r from-yellow-400 to-amber-500 px-4 py-4">
-                      <p className="font-bold text-slate-900 text-lg">
-                        {currentUser?.email}
-                      </p>
-                      <p className="text-sm text-slate-700 truncate">
-                        {currentUser?.email}
-                      </p>
-                    </div>
-
-                    <div className="py-2">
-                      <NavLink
-                        to="/profile"
-                        onClick={() => setShowProfileMenu(false)}
-                        className="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-gray-50 transition-colors"
-                      >
-                        <span className="text-xl">👤</span>
-                        <span className="font-medium">View Profile</span>
-                      </NavLink>
-                      <NavLink
-                        to="/profile/edit"
-                        onClick={() => setShowProfileMenu(false)}
-                        className="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-gray-50 transition-colors"
-                      >
-                        <span className="text-xl">✏️</span>
-                        <span className="font-medium">Edit Profile</span>
-                      </NavLink>
-                      <NavLink
-                        to="/settings"
-                        onClick={() => setShowProfileMenu(false)}
-                        className="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-gray-50 transition-colors"
-                      >
-                        <span className="text-xl">⚙️</span>
-                        <span className="font-medium">Settings</span>
-                      </NavLink>
-                      <NavLink
-                        to="/notifications"
-                        onClick={() => setShowProfileMenu(false)}
-                        className="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-gray-50 transition-colors"
-                      >
-                        <span className="text-xl">🔔</span>
-                        <span className="font-medium">Notifications</span>
-                      </NavLink>
-                    </div>
-
-                    <div className="border-t border-gray-200" />
-
-                    <button
-                      onClick={() => {
-                        setShowProfileMenu(false);
-                        onLogout();
-                        navigate("/");
-                      }}
-                      className="flex items-center space-x-3 w-full px-4 py-3 text-red-600 hover:bg-red-50 transition-colors"
-                    >
-                      <span className="text-xl">🚪</span>
-                      <span className="font-medium">Logout</span>
-                    </button>
-                  </div>
-                )}
+                {/* ===== Profile Dropdown Component ===== */}
+                <ProfileDropdown
+                  currentUser={currentUser}
+                  showProfileMenu={showProfileMenu}
+                  setShowProfileMenu={setShowProfileMenu}
+                  onLogout={onLogout}
+                  profileButtonRef={profileButtonRef}
+                />
               </div>
             )}
           </div>
@@ -270,7 +196,6 @@ useEffect(() => {
               )}
             </svg>
           </button>
-
         </div>
       </div>
 
@@ -278,7 +203,7 @@ useEffect(() => {
       {isOpen && (
         <div
           ref={mobileMenuRef}
-          className="md:hidden top-10 bg-slate-900 border-t border-slate-700 shadow-xl animate-in slide-in-from-top  duration-200"
+          className="md:hidden top-10 bg-slate-900 border-t border-slate-700 shadow-xl animate-in slide-in-from-top duration-200"
         >
           <ul className="flex flex-col py-4 space-y-1 px-4">
             {navLinks

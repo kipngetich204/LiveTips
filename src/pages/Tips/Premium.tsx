@@ -1,4 +1,4 @@
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../../hooks/useAuth";
 import { Tips } from "./Tips";
 
 export function Premium() {
@@ -25,7 +25,7 @@ export function Premium() {
   if (user && user.type === "premium") return <Tips />;
 
   return (
-    <section className="py-12  mt-10  sm:py-16 bg-black text-white min-h-[70vh]">
+    <section className="py-12 sm:py-16 bg-black text-white">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 text-center">
         {/* Title */}
         <h2 className="text-2xl sm:text-3xl font-bold mb-6 sm:mb-8 text-yellow-400">
