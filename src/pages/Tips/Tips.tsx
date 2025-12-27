@@ -6,8 +6,9 @@ import type { Tiptype } from "../../types/tips";
 import { type FullFixture } from "../../types/livescore";
 import { LoadingPage } from "../Loading";
 import { ErrorPage } from "../Error";
-import { testTips } from "../../testingData/tips";
 import { TipDetails } from "./TipDetails";
+
+const API_BASE_URL = "https://backend-livetips.onrender.com";
 
 // ✅ Fetch tips from Firestore
 export async function getTips(): Promise<Tiptype[]> {
@@ -20,11 +21,14 @@ export async function getTips(): Promise<Tiptype[]> {
 }
 
 // ✅ Fetch fixtures from API
-/* async function getFixtures(): Promise<FullFixture[]> {
-  const res = await fetch(`https://football-project-backend-cv2j.onrender.com/fixtures`);
+async function getFixtures(): Promise<FullFixture[]> {
+  const res = await fetch(`${API_BASE_URL}/livescore`);
   if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-  return await res.json();
-} */
+  const data = await res.json();
+  
+  // The API returns { fixtures: FullFixture[], ... }
+  return data.fixtures || [];
+}
 
 // ✅ Match prediction logic
 function checkPredictionResult(
@@ -48,11 +52,21 @@ function checkPredictionResult(
     return totalGoals < 2.5 ? "won" : "lost";
   }
 
-  if (market.includes("gg") || market.includes("btts") || prediction.includes("gg") || prediction.includes("btts")) {
+  if (
+    market.includes("gg") ||
+    market.includes("btts") ||
+    prediction.includes("gg") ||
+    prediction.includes("btts")
+  ) {
     return homeGoals > 0 && awayGoals > 0 ? "won" : "lost";
   }
 
-  if (market.includes("1x2") || prediction.includes("home win") || prediction.includes("away win") || prediction.includes("draw")) {
+  if (
+    market.includes("1x2") ||
+    prediction.includes("home win") ||
+    prediction.includes("away win") ||
+    prediction.includes("draw")
+  ) {
     if (prediction.includes("home win") || prediction.includes("1")) {
       return homeGoals > awayGoals ? "won" : "lost";
     }
@@ -81,12 +95,35 @@ async function updateTipStatus(
   matchStatus: "Live" | "Finished" | "Not Started"
 ) {
   const tipRef = doc(db, "tips", tipId);
-  await updateDoc(tipRef, { 
-    status, 
+  await updateDoc(tipRef, {
+    status,
     score,
     matchStatus,
-    lastUpdated: new Date().toISOString()
+    lastUpdated: new Date().toISOString(),
   });
+}
+
+// ✅ Map API fixture status to our status format
+function mapFixtureStatus(
+  status?: string
+): "Not Started" | "Live" | "Finished" {
+  switch (status) {
+    case "FT":
+    case "AET":
+    case "PEN":
+      return "Finished";
+    case "LIVE":
+    case "1H":
+    case "2H":
+    case "HT":
+    case "ET":
+    case "P":
+      return "Live";
+    case "NS":
+    case "TBD":
+    default:
+      return "Not Started";
+  }
 }
 
 export const Tips = () => {
@@ -97,65 +134,40 @@ export const Tips = () => {
   const [updating, setUpdating] = useState(false);
   const [selectedTip, setSelectedTip] = useState<Tiptype | null>(null);
   const [modalLoading, setModalLoading] = useState(false);
-  console.log(typeof fixtures)
+  const [error, setError] = useState<string | null>(null);
+  const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
+
   useEffect(() => {
     const fetchAndUpdateData = async () => {
       try {
-        setLoading(true);
-        
-        // Fetch tips from Firestore
-        const tipsData = await getTips();
-        
-        // Fetch fixtures from API - currently commented out, using testTips instead
-        // const [tipsData, fixturesData] = await Promise.all([
-        //   getTips(),
-        //   getFixtures()
-        // ]);
-        
-        // Using test data instead of API
-        const fixturesData = testTips as unknown as FullFixture[];
+        setError(null);
+        if (!updating) setLoading(true);
+
+        // Fetch both tips and fixtures in parallel
+        const [tipsData, fixturesData] = await Promise.all([
+          getTips(),
+          getFixtures(),
+        ]);
 
         setFixtures(fixturesData);
-        
 
         // Create a map of fixtures by ID for quick lookup
         const fixtureMap = new Map(
-          fixturesData.map(f => [f.fixture?.id?.toString(), f])
+          fixturesData.map((f) => [f.fixture?.id?.toString(), f])
         );
 
         // Update tips with live data
         const updatedTips = await Promise.all(
           tipsData.map(async (tip) => {
             const fixture = fixtureMap.get(tip.livescoreId);
-            
+
             if (!fixture) return tip;
 
             const rawMatchStatus = fixture.fixture?.status?.short || "NS";
             const homeGoals = fixture.goals?.home ?? 0;
             const awayGoals = fixture.goals?.away ?? 0;
             const score = `${homeGoals} - ${awayGoals}`;
-
-            function mapFixtureStatus(status?: string): "Not Started" | "Live" | "Finished" {
-  switch (status) {
-    case "FT":
-              case "AET":
-              case "PEN":
-                return "Finished";
-              case "LIVE":
-              case "1H":
-              case "2H":
-              case "HT":
-              case "ET":
-              case "P":
-                return "Live";
-              case "NS":
-              case "TBD":
-              default:
-                return "Not Started";
-            }
-          }
-          
-          const matchStatus = mapFixtureStatus(rawMatchStatus);
+            const matchStatus = mapFixtureStatus(rawMatchStatus);
 
             // Determine new status
             let newStatus: Tiptype["status"] = tip.status;
@@ -163,18 +175,21 @@ export const Tips = () => {
             if (matchStatus === "Finished") {
               // Match finished - check if prediction was correct
               newStatus = checkPredictionResult(tip, fixture);
-              
+
               // Update in Firestore if status changed
-              if (newStatus !== tip.status) {
+              if (newStatus !== tip.status || tip.score !== score) {
                 setUpdating(true);
                 await updateTipStatus(tip.id, newStatus, score, "Finished");
               }
             } else if (matchStatus === "Live") {
               newStatus = "pending";
-              if (tip.matchStatus !== "Live") {
+              if (
+                tip.matchStatus !== "Live" ||
+                tip.score !== score
+              ) {
                 await updateTipStatus(tip.id, "pending", score, "Live");
               }
-            } else  {
+            } else {
               newStatus = "pending";
               if (tip.matchStatus !== "Not Started") {
                 await updateTipStatus(tip.id, "pending", "- : -", "Not Started");
@@ -185,16 +200,18 @@ export const Tips = () => {
               ...tip,
               status: newStatus,
               score,
-              matchStatus: matchStatus
+              matchStatus: matchStatus,
             };
           })
         );
 
         setTips(updatedTips);
-
+        setLastUpdate(new Date());
       } catch (error) {
         console.error("Error fetching data:", error);
-        return <ErrorPage message={error instanceof Error ? error.message : "Error fetching data"} />;
+        setError(
+          error instanceof Error ? error.message : "Error fetching data"
+        );
       } finally {
         setLoading(false);
         setUpdating(false);
@@ -203,8 +220,8 @@ export const Tips = () => {
 
     fetchAndUpdateData();
 
-    // Auto-refresh every 10 hours
-    const interval = setInterval(fetchAndUpdateData, 36000000);
+    // Auto-refresh every 2 minutes (120000ms) for live updates
+    const interval = setInterval(fetchAndUpdateData, 120000);
     return () => clearInterval(interval);
   }, []);
 
@@ -214,8 +231,12 @@ export const Tips = () => {
       ? tips.filter((tip) => tip.type === "premium" || tip.type === "basic")
       : tips.filter((tip) => tip.type === "basic");
 
-  if (loading) {
+  if (loading && !tips.length) {
     return <LoadingPage />;
+  }
+
+  if (error && !tips.length) {
+    return <ErrorPage message={error} />;
   }
 
   return (
@@ -232,6 +253,13 @@ export const Tips = () => {
             </div>
           )}
         </div>
+
+        {/* Error banner */}
+        {error && tips.length > 0 && (
+          <div className="mb-4 bg-red-900/50 border border-red-500 text-red-200 p-3 rounded-lg text-sm">
+            ⚠️ Could not fetch latest updates. Showing cached data.
+          </div>
+        )}
 
         {!displayedTips.length ? (
           <div className="text-center bg-gray-800 p-6 rounded-lg">
@@ -356,7 +384,9 @@ export const Tips = () => {
                       <td className="py-3 px-4">
                         <div className="text-sm">
                           {tip.date && <div>{tip.date}</div>}
-                          {tip.time && <div className="text-gray-400">{tip.time}</div>}
+                          {tip.time && (
+                            <div className="text-gray-400">{tip.time}</div>
+                          )}
                         </div>
                       </td>
                       <td className="py-3 px-4">
@@ -426,10 +456,10 @@ export const Tips = () => {
         )}
 
         {/* Tip Details Modal */}
-        <TipDetails 
-          tip={selectedTip} 
-          isLoading={modalLoading} 
-          onClose={() => setSelectedTip(null)} 
+        <TipDetails
+          tip={selectedTip}
+          isLoading={modalLoading}
+          onClose={() => setSelectedTip(null)}
         />
 
         <div className="mt-6 text-center space-y-2">
@@ -439,8 +469,15 @@ export const Tips = () => {
               : "Upgrade to premium to unlock exclusive VIP tips!"}
           </p>
           <p className="text-xs text-gray-500">
-            Auto-updates every 2 minutes • Last updated: {new Date().toLocaleTimeString()}
+            Auto-updates every 2 minutes • Last updated:{" "}
+            {lastUpdate.toLocaleTimeString()}
           </p>
+          {fixtures.length > 0 && (
+            <p className="text-xs text-gray-600">
+              {fixtures.length} live match{fixtures.length !== 1 ? "es" : ""}{" "}
+              being tracked
+            </p>
+          )}
         </div>
       </div>
     </div>
