@@ -7,10 +7,49 @@ import {
   updateDoc,
   deleteDoc,
   doc,
+  setDoc,
 } from "firebase/firestore";
 import { type FullFixture } from "../../types/livescore";
 import { type Tiptype } from "../../types/tips";
 import { ErrorPage } from "../../pages/Error";
+
+
+
+// adding first testing data for tips page
+// Add import at the top
+import { testingTipsData } from "../../testingData/testing_tips_data";
+
+// Add this handler inside TipManagement
+const handleUploadDailyTips = async () => {
+  const dailyTip = testingTipsData[0];
+  if (!dailyTip) {
+    alert("No daily tips data found.");
+    return;
+  }
+
+  const confirmed = confirm(
+    `Upload daily tips for ${dailyTip.date} (${dailyTip.total} matches) to Firebase?`
+  );
+  if (!confirmed) return;
+
+  try {
+    // Use the date as the document ID so each day is unique
+    // and re-uploading the same date overwrites instead of duplicating
+    const docRef = doc(db, "dailyTips", dailyTip.date);
+    await setDoc(docRef, {
+      date: dailyTip.date,
+      generated_at: dailyTip.generated_at,
+      total: dailyTip.total,
+      summary: dailyTip.summary,
+      matches: dailyTip.matches,
+      uploadedAt: new Date().toISOString(),
+    });
+    alert(`✅ Daily tips for ${dailyTip.date} uploaded successfully!`);
+  } catch (err) {
+    console.error("Error uploading daily tips:", err);
+    alert("❌ Failed to upload daily tips. Please try again.");
+  }
+};
 
 const API_BASE_URL = "https://backend-livetips.onrender.com";
 
@@ -641,6 +680,31 @@ export const TipManagement = () => {
             </button>
           </div>
         )}
+
+        <div className="flex gap-3 mb-4">
+  <button
+    onClick={() => {
+      setIsAddTip((prev) => !prev);
+      setIsEditing(null);
+      setFormData({
+        league: "", homeTeam: "", awayTeam: "", prediction: "",
+        type: "basic", markets: "Over 2.5 Goals", fixtureId: "",
+        reason: "", time: "", date: "", time24: "", score: "",
+        matchStatus: "Not Started",
+      });
+    }}
+    className="bg-green-500 px-4 py-2 rounded-lg hover:bg-green-600 transition-colors font-semibold"
+  >
+    {isAddTip ? "✕ Close Form" : "+ Add Tip"}
+  </button>
+
+  <button
+    onClick={handleUploadDailyTips}
+    className="bg-blue-500 px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors font-semibold"
+  >
+    ⬆ Upload Daily Tips ({testingTipsData[0]?.date})
+  </button>
+</div>
 
         {/* Display tips */}
         <div className="mt-6">

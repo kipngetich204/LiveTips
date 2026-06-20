@@ -2,22 +2,35 @@ import { useEffect, useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { getDocs, collection, doc, updateDoc } from "firebase/firestore";
 import { db } from "../../FirebaseConfig/firebase";
-import type { Tiptype } from "../../types/tips";
+//import type { MatchPrediction } from "../../types/tips";
 import { type FullFixture } from "../../types/livescore";
 import { LoadingPage } from "../Loading";
 import { ErrorPage } from "../Error";
 import { TipDetails } from "./TipDetails";
+//import {testingTipsData} from "../../testingData/testing_tips_data";
+import { type MatchPrediction } from "../../types/testingTips";
+import { type DailyTipsDoc } from "../../types/testingTips";
+
 
 const API_BASE_URL = "https://backend-livetips.onrender.com";
 
+
+function formatDate(date = new Date()) {
+  return date.toISOString().slice(0, 10);
+}
 // ✅ Fetch tips from Firestore
-export async function getTips(): Promise<Tiptype[]> {
-  const querySnapshot = await getDocs(collection(db, "tips"));
-  const tipsList: Tiptype[] = querySnapshot.docs.map((doc) => ({
+export async function getTips(): Promise<MatchPrediction[]> {
+  const querySnapshot = await getDocs(collection(db, "dailyTips"));
+  const tipsList = querySnapshot.docs.map((doc) => ({
     id: doc.id,
     ...doc.data(),
-  })) as unknown as Tiptype[];
-  return tipsList;
+  })) as (DailyTipsDoc & { docId: string })[];
+  
+  const dailyDoc = tipsList.find((doc) => doc.date === formatDate());
+  //console.log("Daily doc:", dailyDoc);
+  
+  // ✅ Return the matches INSIDE the document, not the document itself
+  return (dailyDoc?.matches ?? []) as MatchPrediction[];
 }
 
 // ✅ Fetch fixtures from API
@@ -25,6 +38,7 @@ async function getFixtures(): Promise<FullFixture[]> {
   const res = await fetch(`${API_BASE_URL}/livescore`);
   if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
   const data = await res.json();
+  //console.log("data", data)
   
   // The API returns { fixtures: FullFixture[], ... }
   return data.fixtures || [];
@@ -32,7 +46,7 @@ async function getFixtures(): Promise<FullFixture[]> {
 
 // ✅ Match prediction logic
 function checkPredictionResult(
-  tip: Tiptype,
+  tip: MatchPrediction,
   fixture: FullFixture
 ): "won" | "lost" | "pending" {
   const { goals } = fixture;
@@ -90,11 +104,11 @@ function checkPredictionResult(
 // ✅ Update tip status in Firestore
 async function updateTipStatus(
   tipId: string,
-  status: Tiptype["status"],
+  status: MatchPrediction["status"],
   score: string,
   matchStatus: "Live" | "Finished" | "Not Started"
 ) {
-  const tipRef = doc(db, "tips", tipId);
+  const tipRef = doc(db, "dailyTips", tipId);
   await updateDoc(tipRef, {
     status,
     score,
@@ -128,11 +142,11 @@ function mapFixtureStatus(
 
 export const Tips = () => {
   const { user } = useAuth();
-  const [tips, setTips] = useState<Tiptype[]>([]);
+  const [tips, setTips] = useState<MatchPrediction[]>([]);
   const [fixtures, setFixtures] = useState<FullFixture[]>([]);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
-  const [selectedTip, setSelectedTip] = useState<Tiptype | null>(null);
+  const [selectedTip, setSelectedTip] = useState<MatchPrediction | null>(null);
   const [modalLoading, setModalLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
@@ -170,7 +184,7 @@ export const Tips = () => {
             const matchStatus = mapFixtureStatus(rawMatchStatus);
 
             // Determine new status
-            let newStatus: Tiptype["status"] = tip.status;
+            let newStatus: MatchPrediction["status"] = tip.status;
 
             if (matchStatus === "Finished") {
               // Match finished - check if prediction was correct
@@ -208,7 +222,7 @@ export const Tips = () => {
         setTips(updatedTips);
         setLastUpdate(new Date());
       } catch (error) {
-        console.error("Error fetching data:", error);
+        //console.error("Error fetching data:", error);
         setError(
           error instanceof Error ? error.message : "Error fetching data"
         );

@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import { getTips } from "../pages/Tips/Tips";
+import { type MatchPrediction } from "../types/testingTips";
 
 
 
-export interface Tiptype {
+/* export interface Tiptype {
   id: string;
   time: string;
   date: string;
@@ -15,13 +16,16 @@ export interface Tiptype {
   type: "basic" | "premium";
   status: "won" | "lost" | "pending";
   markets: "Over 2.5 Goals" | "GG" | "1X2" | "Handicap" | "BTTS";
-}
+} */
+
+
+
 
 
 
 
 export const YesterdayTips = () => {
-    const [tipsList, setTipsList] = useState<Tiptype[]>([]);
+    const [tipsList, setTipsList] = useState<MatchPrediction[]>([]);
   // Fetch tips on component mount
   useEffect(() => {
     const fetchTips = async () => {

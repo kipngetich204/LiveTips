@@ -1,7 +1,8 @@
-import type { Tiptype } from "../../types/tips";
+//import type { Tiptype } from "../../types/tips";
+import { type MatchPrediction } from "../../types/testingTips";
 
 interface TipDetailsProps {
-  tip: Tiptype | null;
+  tip: MatchPrediction | null;
   isLoading: boolean;
   onClose: () => void;
 }

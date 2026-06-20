@@ -1,8 +1,6 @@
-
-import { type Tiptype } from "./RightBar";
-
+import { type MatchPrediction } from "../types/testingTips";
 interface TodayTipsProps {
-  tips: Tiptype[];
+  tips: MatchPrediction[];
 }
 
 export const TodayTips = ({ tips }: TodayTipsProps) => {

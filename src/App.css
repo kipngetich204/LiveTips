@@ -1,3 +1,54 @@
 * {
   color: green;
 }
+
+:root {
+  /* Backgrounds */
+  --bg-primary:     #faf9f5;
+  --bg-secondary:   #f0eee6;
+  --bg-tertiary:    #e8e6dc;
+  --bg-dark:        #141413;
+
+  /* Text */
+  --text-primary:   #141413;
+  --text-secondary: #5e5d59;
+  --text-muted:     #87867f;
+  --text-disabled:  #b0aea5;
+  --text-on-dark:   #faf9f5;
+
+  /* Accent */
+  --accent-clay:    #d97757;
+  --accent-olive:   #788c5d;
+
+  /* Fonts */
+  --font-sans:   "Inter", "DM Sans", Arial, sans-serif;
+  --font-serif:  Georgia, "Times New Roman", serif;
+  --font-mono:   "JetBrains Mono", "Fira Code", monospace;
+
+  /* Border Radius */
+  --radius-sm:   8px;
+  --radius-md:   16px;
+  --radius-lg:   24px;
+  --radius-pill: 999px;
+
+  /* Spacing */
+  --space-xs:  4px;
+  --space-sm:  8px;
+  --space-md:  16px;
+  --space-lg:  24px;
+  --space-xl:  48px;
+  --space-2xl: 96px;
+  --space-3xl: 160px;
+
+  /* Shadow */
+  --shadow-card: 0 2px 8px rgba(20,20,19,.06), 0 8px 24px rgba(20,20,19,.08);
+}
+
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: 15px;
+  line-height: 1.5;
+  letter-spacing: -0.002em;
+}

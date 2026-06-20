@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import {getTips } from "../pages/Tips/Tips";
-import type { Tiptype } from "../Home/RightBar";
+import { type MatchPrediction } from "../types/testingTips";
 
 export const MarketsSidebar = () => {
   const markets = ["Over 2.5 Goals", "GG", "1X2", "Handicap", "BTTS"];
   const [activeMarket, setActiveMarket] = useState<string | null>(null);
-  const [tipsList, setTipsList] = useState<Tiptype[]>([]);
+  const [tipsList, setTipsList] = useState<MatchPrediction[]>([]);
   // Fetch tips on component mount
   useEffect(() => {
     const fetchTips = async () => {
@@ -16,7 +16,7 @@ export const MarketsSidebar = () => {
   }, []);
 
   // Filter tips based on selected market
-  const filteredTips: Tiptype[] = activeMarket
+  const filteredTips: MatchPrediction[] = activeMarket
     ? tipsList.filter((tip) => tip.markets === activeMarket)
     : tipsList;
 
