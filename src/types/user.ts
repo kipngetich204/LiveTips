@@ -10,7 +10,7 @@ export interface User {
   createdAt: string;
   lastLoginAt: string;
   sessionDuration?: number; // Total time logged in (seconds)
-  type: 'basic' | 'premium'; // User type
+  type: 'basic' | 'premium' | 'super_premium'; // User type
 }
 
 export interface UserSession {

@@ -1,109 +1,171 @@
-import { useEffect, useState } from "react";
-import {getTips } from "../pages/Tips/Tips";
-import { type MatchPrediction } from "../types/testingTips";
+import { useEffect, useMemo, useState } from "react";
+import { getTips } from "../pages/Tips/Tips";
+import { useAuth } from "../context/AuthContext";
+import type {
+  MatchPrediction,
+  Prediction,
+} from "../types/testingTips";
+
+type TierKey = "basic" | "premium" | "super_premium";
+
+const TIER_ACCESS: Record<string, TierKey[]> = {
+  basic: ["basic"],
+  premium: ["basic", "premium"],
+  super_premium: ["basic", "premium", "super_premium"],
+  admin: ["basic", "premium", "super_premium"],
+};
 
 export const MarketsSidebar = () => {
-  const markets = ["Over 2.5 Goals", "GG", "1X2", "Handicap", "BTTS"];
-  const [activeMarket, setActiveMarket] = useState<string | null>(null);
+  const { user } = useAuth();
+
   const [tipsList, setTipsList] = useState<MatchPrediction[]>([]);
-  // Fetch tips on component mount
+  const [activeMarket, setActiveMarket] = useState<string | null>(null);
+
   useEffect(() => {
     const fetchTips = async () => {
       const tips = await getTips();
       setTipsList(tips);
     };
+
     fetchTips();
   }, []);
 
-  // Filter tips based on selected market
-  const filteredTips: MatchPrediction[] = activeMarket
-    ? tipsList.filter((tip) => tip.markets === activeMarket)
-    : tipsList;
+  const allowedTiers: TierKey[] = useMemo(() => {
+    if (user?.isAdmin) {
+      return TIER_ACCESS.admin;
+    }
 
-  const handleClick = (market: string) => {
-    setActiveMarket((prev) => (prev === market ? null : market));
-  };
+    return TIER_ACCESS[user?.type ?? "basic"];
+  }, [user]);
+
+  const markets = useMemo(() => {
+    const unique = new Set<string>();
+
+    tipsList.forEach((match) => {
+      allowedTiers.forEach((tier) => {
+        match.predictions[tier].predictions.forEach((prediction) => {
+          unique.add(prediction.market);
+        });
+      });
+    });
+
+    return [...unique].sort();
+  }, [tipsList, allowedTiers]);
+
+  const filteredTips = useMemo(() => {
+    const list: Array<
+      MatchPrediction & {
+        tier: TierKey;
+        prediction: Prediction;
+      }
+    > = [];
+
+    tipsList.forEach((match) => {
+      allowedTiers.forEach((tier) => {
+        match.predictions[tier].predictions.forEach((prediction) => {
+          if (!activeMarket || prediction.market === activeMarket) {
+            list.push({
+              ...match,
+              tier,
+              prediction,
+            });
+          }
+        });
+      });
+    });
+
+    return list;
+  }, [tipsList, allowedTiers, activeMarket]);
 
   return (
-    <div className="bg-gray-800 rounded-lg p-3 md:p-4 w-full">
-      {/* Header */}
-      <h2 className="text-yellow-400 font-bold text-lg md:text-xl mb-3 md:mb-4">
+    <div className="bg-gray-800 rounded-lg p-4">
+      <h2 className="text-yellow-400 text-xl font-bold mb-4">
         Markets
       </h2>
 
-      {/* Markets List - Horizontal scroll on mobile, vertical on desktop */}
-      <div className="mb-4 md:mb-6">
-        {/* Mobile: Horizontal scrollable chips */}
-        <div className="flex md:hidden gap-2 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-700">
-          {markets.map((market) => (
-            <button
-              key={market}
-              onClick={() => handleClick(market)}
-              className={`flex-shrink-0 px-3 py-2 rounded-lg text-sm font-medium transition whitespace-nowrap ${
-                activeMarket === market
-                  ? "bg-yellow-400 text-black font-semibold"
-                  : "bg-gray-700 text-gray-300 hover:bg-gray-600"
-              }`}
-            >
-              {market}
-            </button>
-          ))}
-        </div>
-
-        {/* Desktop: Vertical list */}
-        <ul className="hidden md:block space-y-2 text-gray-300">
-          {markets.map((market) => (
-            <li
-              key={market}
-              onClick={() => handleClick(market)}
-              className={`cursor-pointer px-3 py-2 rounded transition ${
-                activeMarket === market
-                  ? "bg-yellow-400 text-black font-semibold"
-                  : "hover:text-yellow-400 hover:bg-gray-700"
-              }`}
-            >
-              {market}
-            </li>
-          ))}
-        </ul>
+      {/* Mobile */}
+      <div className="flex gap-2 overflow-x-auto md:hidden pb-2">
+        {markets.map((market) => (
+          <button
+            key={market}
+            onClick={() =>
+              setActiveMarket((prev) =>
+                prev === market ? null : market
+              )
+            }
+            className={`px-3 py-2 rounded whitespace-nowrap ${
+              activeMarket === market
+                ? "bg-yellow-400 text-black"
+                : "bg-gray-700 text-white"
+            }`}
+          >
+            {market}
+          </button>
+        ))}
       </div>
 
-      {/* Clear Filter Button */}
+      {/* Desktop */}
+      <ul className="hidden md:block space-y-2 mb-4">
+        {markets.map((market) => (
+          <li
+            key={market}
+            onClick={() =>
+              setActiveMarket((prev) =>
+                prev === market ? null : market
+              )
+            }
+            className={`cursor-pointer px-3 py-2 rounded ${
+              activeMarket === market
+                ? "bg-yellow-400 text-black"
+                : "hover:bg-gray-700 text-white"
+            }`}
+          >
+            {market}
+          </li>
+        ))}
+      </ul>
+
       {activeMarket && (
         <button
+          className="mb-4 w-full bg-gray-700 hover:bg-gray-600 rounded py-2"
           onClick={() => setActiveMarket(null)}
-          className="w-full mb-4 px-3 py-2 text-sm text-gray-400 hover:text-yellow-400 bg-gray-700 hover:bg-gray-600 rounded transition"
         >
           Clear Filter
         </button>
       )}
 
-      {/* Filtered Tips Section */}
-      <div>
-        <h3 className="text-yellow-400 font-semibold text-sm md:text-base mb-3 text-center">
-          {activeMarket ? `Tips: ${activeMarket}` : "All Tips"}
-        </h3>
-        
+      <h3 className="text-yellow-400 font-semibold mb-3">
+        {activeMarket ?? "All Markets"}
+      </h3>
+
+      <div className="space-y-2 max-h-[500px] overflow-y-auto">
         {filteredTips.length === 0 ? (
-          <p className="text-gray-400 text-xs md:text-sm text-center py-4">
-            No tips available
+          <p className="text-gray-400 text-sm">
+            No predictions found.
           </p>
         ) : (
-          <ul className="space-y-2 max-h-[400px] md:max-h-[500px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-700">
-            {filteredTips.map((tip) => (
-              <li
-                key={tip.id}
-                className="bg-gray-700 p-2 md:p-3 rounded hover:bg-gray-600 transition"
-              >
-                <p className="text-yellow-300 font-semibold text-xs md:text-sm">
-                  {tip.homeTeam} vs {tip.awayTeam}
-                </p>
-                <p className="text-gray-300 text-xs md:text-sm mt-1">
-                  {tip.prediction}
-                </p>
-              </li>
-            ))}
-          </ul>
+          filteredTips.map((tip) => (
+            <div
+              key={`${tip.id}-${tip.tier}-${tip.prediction.market}`}
+              className="bg-gray-700 rounded p-3"
+            >
+              <p className="text-yellow-300 font-semibold">
+                {tip.homeTeam} vs {tip.awayTeam}
+              </p>
+
+              <p className="text-gray-300 text-sm mt-1">
+                <strong>{tip.prediction.market}</strong>
+              </p>
+
+              <p className="text-white">
+                {tip.prediction.prediction}
+              </p>
+
+              <p className="text-xs text-gray-400 mt-1">
+                {tip.tier.replace("_", " ")} • {tip.prediction.confidence}%
+              </p>
+            </div>
+          ))
         )}
       </div>
     </div>

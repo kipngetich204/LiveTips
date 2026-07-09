@@ -128,6 +128,7 @@ export interface DailyTipsDoc {
   generated_at: string;
   uploadedAt: string;
   total: number;
+  matchStatus: MatchStatus;
   summary: Summary;
   matches: MatchPrediction[];
 }
@@ -140,3 +141,8 @@ export interface TestingTips {
   summary: Summary;
   matches: MatchPrediction[];
 }
+
+
+export type MatchPredictionWithDoc = MatchPrediction & {
+  docId: string;
+};

@@ -3,7 +3,10 @@ interface TodayTipsProps {
   tips: MatchPrediction[];
 }
 
+import { useAuth } from "../context/AuthContext";
+
 export const TodayTips = ({ tips }: TodayTipsProps) => {
+  const { user } = useAuth();
   return (
     <div className="bg-gray-800 rounded-lg pt-0 p-4">
       <h2 className="text-yellow-400 font-bold mb-4 text-center">Today's Tips</h2>
@@ -25,7 +28,7 @@ export const TodayTips = ({ tips }: TodayTipsProps) => {
                 <td className="py-2 px-3">{tip.time}</td>
                 <td className="py-2 px-3 text-yellow-300 font-semibold">{tip.homeTeam}</td>
                 <td className="py-2 px-3">{tip.awayTeam}</td>
-                <td className="py-2 px-3 text-green-400">{tip.prediction}</td>
+                <td className="py-2 px-3 text-green-400">{user?.type === "premium" ? tip.predictions.premium.predictions[0]?.prediction : tip.predictions.basic.predictions[0]?.prediction}</td>
               </tr>
             ))}
           </tbody>

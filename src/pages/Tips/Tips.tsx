@@ -5,7 +5,7 @@ import { db } from "../../FirebaseConfig/firebase";
 import { type FullFixture } from "../../types/livescore";
 import { LoadingPage } from "../Loading";
 import { ErrorPage } from "../Error";
-import { TipDetails } from "./TipDetails";
+import { TipDetails } from "./TipDetails/TipDetails";
 import {
   type MatchPrediction,
   type DailyTipsDoc,
@@ -35,7 +35,7 @@ export async function getTips(
     ...d.data(),
   })) as (DailyTipsDoc & { docId: string })[];
 
-  const dailyDoc = tipsList.find((d) => d.date === targetDate);
+  const dailyDoc = tipsList.find((d) => d.date === targetDate || d.matchStatus === "Live"); 
 
   // Each match needs to know which Firestore document it lives in,
   // since matches are nested inside a single day's document.
@@ -44,6 +44,8 @@ export async function getTips(
     docId: dailyDoc!.id,
   }));
 }
+
+
 
 async function getFixtures(): Promise<FullFixture[]> {
   const res = await fetch(`${API_BASE_URL}/livescore`);
