@@ -1,19 +1,12 @@
 type MatchStatus = "Not Started" | "Live" | "Finished";
-type PredictionType = "basic" | "premium" | "super-premium" ;
+
 type Status = "pending" | "won" | "lost";
+
 type RiskLevel = "Low" | "Medium" | "High";
+
 type MatchImportance = "Low" | "Medium" | "High" | "Critical";
 
-type Market =
-  | "Over 2.5 Goals"
-  | "GG"
-  | "1X2"
-  | "Handicap"
-  | "BTTS"
-  | "Over 1.5 Goals"
-  | "Double Chance"
-  | string;
-
+type Market = string;
 
 interface WinProbabilities {
   home: number;
@@ -46,27 +39,38 @@ interface InjuryAlert {
   away_team: string;
 }
 
-interface TierPrediction {
-  market: Market;
+export interface Prediction {
+  market: string;
   prediction: string;
-  reason: string;
   confidence: number;
+  result: string | null;
+}
+
+export interface PredictionTier {
+  predictions: Prediction[];
+  reason: string;
 }
 
 interface AlternativeTip {
   market: string;
   prediction: string;
-  reason: string;
   confidence: number;
+  reason: string;
+}
+
+export interface MatchPredictions {
+  basic: PredictionTier;
+  premium: PredictionTier;
+  super_premium: PredictionTier;
 }
 
 export interface MatchPrediction {
-
   id: string;
   livescoreId: string;
 
   date: string;
   league: string;
+  league_round: string;
 
   homeTeam: string;
   awayTeam: string;
@@ -75,13 +79,9 @@ export interface MatchPrediction {
   score: string;
 
   matchStatus: MatchStatus;
-  markets: Market;
-
-  prediction: string;
-  reason: string;
-
-  type: PredictionType;
   status: Status;
+
+  reason: string;
 
   expected_score: string;
 
@@ -95,12 +95,10 @@ export interface MatchPrediction {
 
   match_importance: MatchImportance;
 
-  league_round: string;
-
   referee: string | null;
 
+  predictions: MatchPredictions;
 
-  // Optional fields
   win_probabilities?: WinProbabilities;
 
   expected_goals?: ExpectedGoals;
@@ -113,53 +111,32 @@ export interface MatchPrediction {
 
   injury_alert?: InjuryAlert;
 
-  basic_prediction?: TierPrediction;
-
-  premium_prediction?: TierPrediction;
-
-  super_premium_prediction?: TierPrediction | null;
-
   alternative_tip?: AlternativeTip | null;
 }
 
-// types/testingTips.ts  — add this alongside MatchPrediction
+
+interface Summary {
+  basic: number;
+  premium: number;
+  super_premium: number;
+  tip_of_the_day: string;
+}
+
 export interface DailyTipsDoc {
   id: string;
   date: string;
   generated_at: string;
   uploadedAt: string;
   total: number;
-  summary: {
-    basic: number;
-    premium: number;
-    super_premium: number;
-    tip_of_the_day: string;
-  };
+  summary: Summary;
   matches: MatchPrediction[];
 }
 
 
-interface Summary {
-
-  basic: number;
-
-  premium: number;
-
-  super_premium: number;
-
-  tip_of_the_day: string;
-}
-
-
 export interface TestingTips {
-
   date: string;
-
   generated_at: string;
-
   total: number;
-
   summary: Summary;
-
   matches: MatchPrediction[];
 }
