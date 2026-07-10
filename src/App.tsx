@@ -1,14 +1,13 @@
 import { Navbar } from "./components/Navbar";
 import { useState, useEffect } from "react";
 import { useAuth } from "./hooks/useAuth";
-import { AuthService } from "./services/auth-service";
+import { AuthService } from "./services/AuthService";
 import { SignIn } from "./components/Authentication/signIn";
 import { SignUp } from "./components/Authentication/signUp";
 import { ResetPassword } from "./components/Authentication/ResetPassword";
 import { Tips } from "./pages/Tips/Tips";
 import { Footer } from "./components/footer";
 import type { User } from "./types/user";
-import './index.css'
 import { Routes, Route } from "react-router-dom";
 import { Home } from "./components/Home";
 import { Premium } from "./pages/Tips/Premium";
@@ -18,6 +17,7 @@ import { NotFound } from "./pages/NotFound";
 import { LiveScore } from "./pages/Livescore";
 import { Marquee } from "./pages/marquue";
 import { Logo } from "./assets/logo";
+import { ResponsibleGambling } from "./pages/ResponsibleGambling";
 //import { ErrorPage } from "./pages/Error";
 
 type ModalType = "signin" | "signup" | "reset" | null;
@@ -57,7 +57,7 @@ export default function App() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-black">
+      <div className="min-h-screen flex items-center justify-center bg-brand-black">
         <Logo />
       </div>
     );
@@ -73,9 +73,9 @@ export default function App() {
         onSignUpClick={() => setActiveModal("signup")}
         onLogout={handleSignOut}
       />
-      <div className="h-2 md:h-2 bg-white"></div>
+      <div className="h-2 md:h-2 bg-surface"></div>
       {/* Main Content - Add padding to account for fixed navbar */}
-      <main className="border-t-red-200 pt-16 md:pt-20 w-full">
+      <main className="pt-16 md:pt-20 w-full">
         {/* Marquee - Appears on all pages */}
         
         
@@ -85,6 +85,7 @@ export default function App() {
           <Route path="/basic" element={<Tips />} />
           <Route path="/premium" element={<Premium />} />
           <Route path="/livescore" element={<LiveScore />} />
+          <Route path="/responsible-gambling" element={<ResponsibleGambling />} />
           <Route
             path="/admin"
             element={

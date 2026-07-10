@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
-import { type MatchPrediction } from "../../../types/testingTips";
-import {useAuth} from "../../../context/AuthContext";
+import { type MatchPrediction } from "../../../types/tips";
+import { useAuth } from "../../../context/AuthContext";
+import { Lock } from "lucide-react";
 
 import { MatchHeader } from "./MatchHeader";
 import { MatchInfo } from "./MatchInfo";
@@ -33,16 +34,16 @@ export const TipDetails: React.FC<TipDetailsProps> = ({ tip, isLoading, onClose 
 
   return (
     <div
-      className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-2 sm:p-4 transition-all duration-300"
+      className="fixed inset-0 bg-brand-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-2 sm:p-4 transition-all duration-300"
       onClick={onClose}
     >
       {isLoading ? (
         <div className="flex items-center justify-center">
-          <div className="animate-spin h-12 w-12 border-4 border-yellow-400 border-t-transparent rounded-full"></div>
+          <div className="animate-spin h-12 w-12 border-4 border-warning border-t-transparent rounded-full"></div>
         </div>
       ) : (
         <div
-          className="bg-gray-900 text-gray-100 rounded-2xl border border-gray-800 shadow-2xl max-w-4xl w-full max-h-[92vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200"
+          className="bg-surface-raised text-text-primary rounded-card border border-border shadow-card-hover max-w-4xl w-full max-h-[92vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200"
           onClick={(e) => e.stopPropagation()}
         >
           <MatchHeader tip={tip} onClose={onClose} />
@@ -53,15 +54,15 @@ export const TipDetails: React.FC<TipDetailsProps> = ({ tip, isLoading, onClose 
 
             {/* AI Executive Summary - Protected if necessary, or open to all */}
             {tip.reason && (
-              <div className="bg-gray-800/50 border border-gray-800 p-4 rounded-xl">
-                <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Overall AI Executive Summary</h4>
-                <p className="text-gray-300 text-sm leading-relaxed">{tip.reason}</p>
+              <div className="bg-surface-muted border border-border p-4 rounded-card">
+                <h4 className="text-xs font-semibold text-text-secondary uppercase tracking-wider mb-2">Overall AI Executive Summary</h4>
+                <p className="text-text-secondary text-sm leading-relaxed">{tip.reason}</p>
               </div>
             )}
 
             {/* Prediction Packages with Guardrails applied */}
             <div className="space-y-4">
-              <h3 className="text-lg font-bold text-white border-b border-gray-800 pb-2">Prediction Packages</h3>
+              <h3 className="text-lg font-bold text-text-primary border-b border-border pb-2">Prediction Packages</h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 
                 {/* Basic Access: Open to everyone */}
@@ -103,13 +104,13 @@ export const TipDetails: React.FC<TipDetailsProps> = ({ tip, isLoading, onClose 
             </div>
           </div>
 
-          <div className="bg-gray-950 p-4 border-t border-gray-800 flex items-center justify-between">
-            <div className="text-xs text-gray-500">
+          <div className="bg-surface-muted p-4 border-t border-border flex items-center justify-between">
+            <div className="text-xs font-data text-text-secondary">
               ID: {tip.id} • Ref: {tip.referee || "N/A"}
             </div>
             <button
               onClick={onClose}
-              className="bg-gray-800 hover:bg-gray-700 text-white font-medium py-2 px-6 rounded-lg transition-colors text-sm"
+              className="min-h-11 bg-surface hover:bg-surface-raised border border-border text-text-primary font-medium py-2 px-6 rounded-control transition-colors text-sm focus-visible:outline-2 focus-visible:outline-offset-2"
             >
               Close Panel
             </button>
@@ -122,18 +123,18 @@ export const TipDetails: React.FC<TipDetailsProps> = ({ tip, isLoading, onClose 
 
 /* --- Quick UI Sub-component to act as a sleek upgrade wall wrapper --- */
 const PremiumBlurOverlay: React.FC<{ tierName: string; cost: string }> = ({ tierName, cost }) => (
-  <div className="border border-gray-800 bg-gray-950/20 rounded-xl p-4 flex flex-col justify-between items-center text-center min-h-[220px] relative overflow-hidden">
+  <div className="border border-border bg-surface-muted rounded-card p-4 flex flex-col justify-between items-center text-center min-h-[220px] relative overflow-hidden">
     <div className="w-full blur-[4px] select-none opacity-20 pointer-events-none space-y-2">
-      <div className="text-xs text-gray-400">MARKET PLACEHOLDER</div>
-      <div className="h-6 bg-gray-700 rounded w-3/4 mx-auto"></div>
-      <div className="h-4 bg-gray-800 rounded w-1/2 mx-auto"></div>
+      <div className="text-xs text-text-secondary">MARKET PLACEHOLDER</div>
+      <div className="h-6 bg-surface rounded w-3/4 mx-auto"></div>
+      <div className="h-4 bg-surface rounded w-1/2 mx-auto"></div>
     </div>
     
-    <div className="absolute inset-0 flex flex-col items-center justify-center p-4 bg-gray-950/60 backdrop-blur-[2px]">
-      <span className="text-xl mb-1">🔒</span>
-      <h4 className="text-sm font-bold text-gray-200 mb-1">{tierName}</h4>
-      <p className="text-[11px] text-gray-400 mb-3 max-w-[150px]">This predictive matrix is locked for your plan.</p>
-      <button className="bg-yellow-400 text-gray-950 text-xs font-bold py-1.5 px-3 rounded-lg hover:bg-yellow-500 transition-colors shadow-lg shadow-yellow-400/10">
+    <div className="absolute inset-0 flex flex-col items-center justify-center p-4 bg-surface-muted/90 backdrop-blur-[2px]">
+      <Lock size={20} className="text-text-secondary mb-1" aria-hidden="true" />
+      <h4 className="text-sm font-bold text-text-primary mb-1">{tierName}</h4>
+      <p className="text-[11px] text-text-secondary mb-3 max-w-[150px]">This predictive matrix is locked for your plan.</p>
+      <button className="min-h-9 bg-warning text-brand-black text-xs font-bold py-1.5 px-3 rounded-control hover:opacity-90 transition-opacity focus-visible:outline-2 focus-visible:outline-offset-2">
         {cost}
       </button>
     </div>

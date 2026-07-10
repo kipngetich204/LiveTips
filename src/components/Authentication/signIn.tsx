@@ -1,5 +1,5 @@
 import React, { useState, type ChangeEvent, type KeyboardEvent } from "react";
-import { AuthService } from "../../services/auth-service";
+import { AuthService } from "../../services/AuthService";
 import type { User } from "../../types/user";
 
 interface SignInProps {
@@ -33,6 +33,7 @@ export const SignIn: React.FC<SignInProps> = ({
 
     try {
       const userData = await AuthService.signInWithEmail(email, password);
+      console.log("Email sign-in successful:", userData);
       onSignIn(userData);
       onClose();
     } catch (err: any) {
@@ -48,6 +49,7 @@ export const SignIn: React.FC<SignInProps> = ({
 
     try {
       const userData = await AuthService.signInWithGoogle();
+      console.log("Google sign-in successful:", userData);
       onSignIn(userData);
       onClose();
     } catch (err: any) {

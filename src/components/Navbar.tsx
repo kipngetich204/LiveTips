@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
-import { NavLink} from "react-router-dom";
+import { NavLink } from "react-router-dom";
+import { Menu, X, ChevronDown, User as UserIcon, Settings, LogOut } from "lucide-react";
 import type { User } from "../types/user";
 import { Logo } from "../assets/logo";
 import { ProfileDropdown } from "./ProfileDropdown";
@@ -27,7 +28,6 @@ export const Navbar: React.FC<NavbarProps> = ({
   onLogout,
   currentUser,
 }) => {
-  //const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -62,8 +62,8 @@ export const Navbar: React.FC<NavbarProps> = ({
 
   return (
     <nav
-      className={`w-full bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 text-white shadow-lg fixed top-0 left-0 z-40 transition-all duration-300 ${
-        scrolled ? "py-2 backdrop-blur-md bg-opacity-95" : "py-3"
+      className={`w-full bg-surface text-text-primary border-b border-border fixed top-0 left-0 z-40 transition-all duration-300 ${
+        scrolled ? "py-2 backdrop-blur-md bg-surface/95" : "py-3"
       }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -71,10 +71,10 @@ export const Navbar: React.FC<NavbarProps> = ({
           {/* ===== LEFT SECTION (Logo) ===== */}
           <NavLink
             to="/"
-            className="flex items-center space-x-3 group transition-transform hover:scale-105"
+            className="flex items-center space-x-3 transition-opacity hover:opacity-80"
           >
-            <Logo variant="navbar" logoText="LT" color="#6366F1" />
-            <span className="font-bold text-xl bg-gradient-to-r from-yellow-400 to-amber-400 bg-clip-text text-transparent">
+            <Logo variant="navbar" logoText="LT" />
+            <span className="font-bold text-xl text-text-primary">
               LIVE TIPS
             </span>
           </NavLink>
@@ -89,10 +89,10 @@ export const Navbar: React.FC<NavbarProps> = ({
                     <NavLink
                       to={link.path}
                       className={({ isActive }) =>
-                        `px-4 py-2 rounded-lg transition-all duration-200 ${
+                        `px-4 py-2 rounded-control transition-colors duration-200 ${
                           isActive
-                            ? "bg-yellow-400/10 text-yellow-400 font-semibold shadow-inner"
-                            : "text-gray-300 hover:text-white hover:bg-white/5"
+                            ? "bg-brand-black text-brand-white dark:bg-brand-white dark:text-brand-black font-semibold"
+                            : "text-text-secondary hover:text-text-primary hover:bg-surface-muted"
                         }`
                       }
                     >
@@ -109,13 +109,13 @@ export const Navbar: React.FC<NavbarProps> = ({
               <>
                 <button
                   onClick={onLoginClick}
-                  className="px-5 py-2 text-gray-300 hover:text-white transition-colors duration-200 font-medium"
+                  className="min-h-11 px-5 py-2 text-text-secondary hover:text-text-primary transition-colors duration-200 font-medium"
                 >
                   Sign In
                 </button>
                 <button
                   onClick={onSignUpClick}
-                  className="px-5 py-2 bg-gradient-to-r from-yellow-400 to-amber-500 text-slate-900 rounded-lg hover:from-yellow-500 hover:to-amber-600 transition-all duration-200 font-semibold shadow-lg hover:shadow-yellow-400/50 hover:scale-105"
+                  className="min-h-11 px-5 py-2 bg-brand-black text-brand-white dark:bg-brand-white dark:text-brand-black rounded-control hover:opacity-90 transition-opacity duration-200 font-semibold"
                 >
                   Sign Up
                 </button>
@@ -125,9 +125,9 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <button
                   ref={profileButtonRef}
                   onClick={() => setShowProfileMenu(!showProfileMenu)}
-                  className="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-white/5 transition-all duration-200 group"
+                  className="flex items-center space-x-2 px-3 py-2 min-h-11 rounded-control hover:bg-surface-muted transition-colors duration-200"
                 >
-                  <div className="w-9 h-9 rounded-full bg-gradient-to-br from-yellow-400 to-amber-500 flex items-center justify-center text-slate-900 font-bold shadow-lg group-hover:shadow-yellow-400/50 transition-all overflow-hidden">
+                  <div className="w-9 h-9 rounded-full bg-surface-muted border border-border flex items-center justify-center text-text-primary font-bold overflow-hidden">
                     {currentUser?.avatar ? (
                       <img
                         src={currentUser.avatar}
@@ -138,21 +138,13 @@ export const Navbar: React.FC<NavbarProps> = ({
                       "U"
                     )}
                   </div>
-                  <svg
-                    className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${
+                  <ChevronDown
+                    size={16}
+                    className={`text-text-secondary transition-transform duration-200 ${
                       showProfileMenu ? "rotate-180" : ""
                     }`}
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M19 9l-7 7-7-7"
-                    />
-                  </svg>
+                    aria-hidden="true"
+                  />
                 </button>
 
                 {/* ===== Profile Dropdown Component ===== */}
@@ -170,31 +162,12 @@ export const Navbar: React.FC<NavbarProps> = ({
           {/* ===== MOBILE TOGGLE ===== */}
           <button
             ref={toggleButtonRef}
-            className="md:hidden text-yellow-400 focus:outline-none p-2 hover:bg-white/5 rounded-lg transition-all"
+            aria-label={isOpen ? "Close menu" : "Open menu"}
+            aria-expanded={isOpen}
+            className="md:hidden min-h-11 min-w-11 flex items-center justify-center text-text-primary hover:bg-surface-muted rounded-control transition-colors"
             onClick={() => setIsOpen(!isOpen)}
           >
-            <svg
-              className="w-6 h-6"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              {isOpen ? (
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              ) : (
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4 6h16M4 12h16M4 18h16"
-                />
-              )}
-            </svg>
+            {isOpen ? <X size={22} aria-hidden="true" /> : <Menu size={22} aria-hidden="true" />}
           </button>
         </div>
       </div>
@@ -203,7 +176,7 @@ export const Navbar: React.FC<NavbarProps> = ({
       {isOpen && (
         <div
           ref={mobileMenuRef}
-          className="md:hidden top-10 bg-slate-900 border-t border-slate-700 shadow-xl animate-in slide-in-from-top duration-200"
+          className="md:hidden top-10 bg-surface border-t border-border shadow-card-hover animate-in slide-in-from-top duration-200"
         >
           <ul className="flex flex-col py-4 space-y-1 px-4">
             {navLinks
@@ -214,10 +187,10 @@ export const Navbar: React.FC<NavbarProps> = ({
                     to={link.path}
                     onClick={() => setIsOpen(false)}
                     className={({ isActive }) =>
-                      `block px-4 py-3 rounded-lg transition-all ${
+                      `block min-h-11 flex items-center px-4 py-3 rounded-control transition-colors ${
                         isActive
-                          ? "bg-yellow-400/10 text-yellow-400 font-semibold"
-                          : "text-gray-300 hover:text-white hover:bg-white/5"
+                          ? "bg-brand-black text-brand-white dark:bg-brand-white dark:text-brand-black font-semibold"
+                          : "text-text-secondary hover:text-text-primary hover:bg-surface-muted"
                       }`
                     }
                   >
@@ -234,7 +207,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                       onLoginClick();
                       setIsOpen(false);
                     }}
-                    className="w-full text-center px-4 py-3 text-gray-300 hover:text-white hover:bg-white/5 rounded-lg transition-all"
+                    className="w-full min-h-11 text-center px-4 py-3 text-text-secondary hover:text-text-primary hover:bg-surface-muted rounded-control transition-colors"
                   >
                     Sign In
                   </button>
@@ -245,7 +218,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                       onSignUpClick();
                       setIsOpen(false);
                     }}
-                    className="w-full px-4 py-3 bg-gradient-to-r from-yellow-400 to-amber-500 text-slate-900 rounded-lg font-semibold shadow-lg transition-all hover:from-yellow-500 hover:to-amber-600"
+                    className="w-full min-h-11 px-4 py-3 bg-brand-black text-brand-white dark:bg-brand-white dark:text-brand-black rounded-control font-semibold transition-opacity hover:opacity-90"
                   >
                     Sign Up
                   </button>
@@ -253,8 +226,8 @@ export const Navbar: React.FC<NavbarProps> = ({
               </>
             ) : (
               <>
-                <li className="pt-2 border-t border-slate-700 mt-2">
-                  <div className="px-4 py-3 text-sm text-gray-400">
+                <li className="pt-2 border-t border-border mt-2">
+                  <div className="px-4 py-3 text-sm text-text-secondary">
                     {currentUser?.email || "user@example.com"}
                   </div>
                 </li>
@@ -262,9 +235,9 @@ export const Navbar: React.FC<NavbarProps> = ({
                   <NavLink
                     to="/profile"
                     onClick={() => setIsOpen(false)}
-                    className="flex items-center space-x-2 px-4 py-3 text-gray-300 hover:text-white hover:bg-white/5 rounded-lg transition-all"
+                    className="flex items-center gap-2 min-h-11 px-4 py-3 text-text-secondary hover:text-text-primary hover:bg-surface-muted rounded-control transition-colors"
                   >
-                    <span>👤</span>
+                    <UserIcon size={16} aria-hidden="true" />
                     <span>Profile</span>
                   </NavLink>
                 </li>
@@ -272,9 +245,9 @@ export const Navbar: React.FC<NavbarProps> = ({
                   <NavLink
                     to="/settings"
                     onClick={() => setIsOpen(false)}
-                    className="flex items-center space-x-2 px-4 py-3 text-gray-300 hover:text-white hover:bg-white/5 rounded-lg transition-all"
+                    className="flex items-center gap-2 min-h-11 px-4 py-3 text-text-secondary hover:text-text-primary hover:bg-surface-muted rounded-control transition-colors"
                   >
-                    <span>⚙️</span>
+                    <Settings size={16} aria-hidden="true" />
                     <span>Settings</span>
                   </NavLink>
                 </li>
@@ -284,9 +257,9 @@ export const Navbar: React.FC<NavbarProps> = ({
                       onLogout();
                       setIsOpen(false);
                     }}
-                    className="flex items-center space-x-2 w-full text-left px-4 py-3 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-all"
+                    className="flex items-center gap-2 w-full min-h-11 text-left px-4 py-3 text-danger hover:bg-danger-bg rounded-control transition-colors"
                   >
-                    <span>🚪</span>
+                    <LogOut size={16} aria-hidden="true" />
                     <span>Logout</span>
                   </button>
                 </li>

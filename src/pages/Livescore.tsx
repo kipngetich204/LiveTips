@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from "react";
+import { AlertTriangle } from "lucide-react";
 import { type FullFixture } from "../types/livescore";
 import { LoadingPage } from "./Loading";
 import { ErrorPage } from "./Error";
+import { InlineLoader } from "../components/feedback/InlineLoader";
 
 const API_BASE_URL = "https://backend-livetips.onrender.com";
 
@@ -19,12 +21,10 @@ export const LiveScore: React.FC = () => {
 
       const res = await fetch(`${API_BASE_URL}/livescore`);
       if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-      
+
       const data = await res.json();
-      
-      // The API returns { fixtures: FullFixture[], total_live: number, ... }
       const fixturesData = data.fixtures || [];
-      
+
       setFixtures(fixturesData);
       setLastUpdate(new Date());
     } catch (err: any) {
@@ -48,22 +48,18 @@ export const LiveScore: React.FC = () => {
   if (error && fixtures.length === 0) return <ErrorPage message={error} />;
 
   return (
-    <div className="w-full bg-gray-900 text-white pb-6">
+    <div className="w-full bg-surface-muted text-text-primary pb-6">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
         {/* Header */}
         <div className="mb-6 md:mb-8">
           <div className="flex justify-between items-center">
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-center flex-1">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-center flex-1 text-text-primary">
               Live Football Scores
             </h1>
-            {isRefreshing && (
-              <div className="flex items-center gap-2 text-sm text-yellow-400">
-                <div className="animate-spin h-4 w-4 border-2 border-yellow-400 border-t-transparent rounded-full"></div>
-              </div>
-            )}
+            {isRefreshing && <InlineLoader label="Updating…" />}
           </div>
 
-          <p className="text-center text-gray-400 text-sm sm:text-base mt-2">
+          <p className="text-center text-text-secondary text-sm sm:text-base mt-2">
             {new Date().toLocaleDateString("en-US", {
               weekday: "long",
               year: "numeric",
@@ -73,10 +69,10 @@ export const LiveScore: React.FC = () => {
           </p>
 
           <div className="text-center mt-2 space-y-1">
-            <p className="text-yellow-400 text-sm">
+            <p className="text-danger text-sm font-medium">
               {fixtures.length} live {fixtures.length === 1 ? "match" : "matches"}
             </p>
-            <p className="text-xs text-gray-500">
+            <p className="text-xs font-data text-text-secondary">
               Auto-updates every 30 seconds • Last updated:{" "}
               {lastUpdate.toLocaleTimeString()}
             </p>
@@ -84,8 +80,9 @@ export const LiveScore: React.FC = () => {
 
           {/* Error banner */}
           {error && fixtures.length > 0 && (
-            <div className="mt-4 bg-red-900/50 border border-red-500 text-red-200 p-3 rounded-lg text-sm text-center">
-              ⚠️ Could not fetch latest updates. Showing cached data.
+            <div className="mt-4 flex items-center justify-center gap-2 bg-danger-bg border border-danger/20 text-danger p-3 rounded-control text-sm">
+              <AlertTriangle size={16} aria-hidden="true" />
+              Could not fetch latest updates. Showing cached data.
             </div>
           )}
         </div>
@@ -103,23 +100,23 @@ export const LiveScore: React.FC = () => {
             return (
               <div
                 key={match.fixture.id}
-                className={`bg-gray-800 rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-all ${
-                  isLive ? "ring-2 ring-red-500" : ""
+                className={`bg-surface-raised border border-border rounded-card shadow-card overflow-hidden hover:shadow-card-hover transition-shadow ${
+                  isLive ? "ring-2 ring-danger" : ""
                 }`}
               >
                 {/* Mobile View */}
                 <div className="md:hidden p-4">
                   {/* Status & Time */}
                   <div className="flex justify-between items-center mb-4 text-xs sm:text-sm">
-                    <div>
-                      <span className="text-gray-400">
+                    <div className="font-data">
+                      <span className="text-text-secondary">
                         {new Date(match.fixture.date).toLocaleTimeString("en-US", {
                           hour: "2-digit",
                           minute: "2-digit",
                         })}
                       </span>
                       {match.fixture.status.elapsed && (
-                        <span className="ml-2 text-yellow-400 font-semibold">
+                        <span className="ml-2 text-text-primary font-semibold">
                           {match.fixture.status.elapsed}'
                         </span>
                       )}
@@ -127,10 +124,10 @@ export const LiveScore: React.FC = () => {
                     <span
                       className={`px-2 py-1 rounded text-xs font-semibold ${
                         isFinished
-                          ? "bg-gray-600 text-white"
+                          ? "bg-pending text-brand-white"
                           : isLive
-                          ? "bg-red-500 text-white animate-pulse"
-                          : "bg-blue-500 text-white"
+                          ? "bg-danger text-brand-white animate-pulse"
+                          : "bg-info text-brand-white"
                       }`}
                     >
                       {match.fixture.status.short}
@@ -138,8 +135,8 @@ export const LiveScore: React.FC = () => {
                   </div>
 
                   {/* League Info */}
-                  <div className="mb-3 pb-2 border-b border-gray-700">
-                    <p className="text-xs text-gray-400 flex items-center gap-2">
+                  <div className="mb-3 pb-2 border-b border-border">
+                    <p className="text-xs text-text-secondary flex items-center gap-2">
                       {match.league.logo && (
                         <img
                           src={match.league.logo}
@@ -159,17 +156,17 @@ export const LiveScore: React.FC = () => {
                         <img
                           src={match.teams.home.logo}
                           alt={match.teams.home.name}
-                          className="w-10 h-10 sm:w-12 sm:h-12 object-contain flex-shrink-0"
+                          className="w-10 h-10 sm:w-12 sm:h-12 object-contain shrink-0"
                         />
                         <span
                           className={`font-semibold text-sm sm:text-base truncate ${
-                            match.teams.home.winner ? "text-green-400" : ""
+                            match.teams.home.winner ? "text-success" : "text-text-primary"
                           }`}
                         >
                           {match.teams.home.name}
                         </span>
                       </div>
-                      <span className="text-2xl sm:text-3xl font-bold ml-2">
+                      <span className="text-2xl sm:text-3xl font-bold font-data text-text-primary ml-2">
                         {match.goals.home ?? 0}
                       </span>
                     </div>
@@ -180,17 +177,17 @@ export const LiveScore: React.FC = () => {
                         <img
                           src={match.teams.away.logo}
                           alt={match.teams.away.name}
-                          className="w-10 h-10 sm:w-12 sm:h-12 object-contain flex-shrink-0"
+                          className="w-10 h-10 sm:w-12 sm:h-12 object-contain shrink-0"
                         />
                         <span
                           className={`font-semibold text-sm sm:text-base truncate ${
-                            match.teams.away.winner ? "text-green-400" : ""
+                            match.teams.away.winner ? "text-success" : "text-text-primary"
                           }`}
                         >
                           {match.teams.away.name}
                         </span>
                       </div>
-                      <span className="text-2xl sm:text-3xl font-bold ml-2">
+                      <span className="text-2xl sm:text-3xl font-bold font-data text-text-primary ml-2">
                         {match.goals.away ?? 0}
                       </span>
                     </div>
@@ -198,8 +195,8 @@ export const LiveScore: React.FC = () => {
 
                   {/* Half-time Score */}
                   {match.score.halftime.home !== null && (
-                    <div className="mt-3 pt-2 border-t border-gray-700 text-center">
-                      <p className="text-xs text-gray-400">
+                    <div className="mt-3 pt-2 border-t border-border text-center">
+                      <p className="text-xs font-data text-text-secondary">
                         HT: {match.score.halftime.home} - {match.score.halftime.away}
                       </p>
                     </div>
@@ -207,8 +204,8 @@ export const LiveScore: React.FC = () => {
 
                   {/* Venue */}
                   {match.fixture.venue.name && (
-                    <div className="mt-3 pt-3 border-t border-gray-700 text-center">
-                      <p className="text-xs sm:text-sm text-gray-400">
+                    <div className="mt-3 pt-3 border-t border-border text-center">
+                      <p className="text-xs sm:text-sm text-text-secondary">
                         {match.fixture.venue.name}
                         {match.fixture.venue.city && `, ${match.fixture.venue.city}`}
                       </p>
@@ -219,8 +216,8 @@ export const LiveScore: React.FC = () => {
                 {/* Desktop View */}
                 <div className="hidden md:block p-6">
                   {/* League Info */}
-                  <div className="mb-4 pb-2 border-b border-gray-700 flex justify-between items-center">
-                    <div className="flex items-center gap-2 text-sm text-gray-400">
+                  <div className="mb-4 pb-2 border-b border-border flex justify-between items-center">
+                    <div className="flex items-center gap-2 text-sm text-text-secondary">
                       {match.league.logo && (
                         <img
                           src={match.league.logo}
@@ -233,7 +230,7 @@ export const LiveScore: React.FC = () => {
                       </span>
                     </div>
                     {match.fixture.venue.name && (
-                      <p className="text-sm text-gray-400">
+                      <p className="text-sm text-text-secondary">
                         {match.fixture.venue.name}
                         {match.fixture.venue.city && `, ${match.fixture.venue.city}`}
                       </p>
@@ -251,7 +248,7 @@ export const LiveScore: React.FC = () => {
                       />
                       <span
                         className={`font-semibold text-lg ${
-                          match.teams.home.winner ? "text-green-400" : ""
+                          match.teams.home.winner ? "text-success" : "text-text-primary"
                         }`}
                       >
                         {match.teams.home.name}
@@ -260,28 +257,28 @@ export const LiveScore: React.FC = () => {
 
                     {/* Score & Status */}
                     <div className="text-center px-8">
-                      <div className="text-4xl font-bold mb-2">
+                      <div className="text-4xl font-bold font-data text-text-primary mb-2">
                         {match.goals.home ?? 0} - {match.goals.away ?? 0}
                       </div>
                       <div className="space-y-1">
                         <span
                           className={`inline-block px-3 py-1 rounded text-sm font-semibold ${
                             isFinished
-                              ? "bg-gray-600 text-white"
+                              ? "bg-pending text-brand-white"
                               : isLive
-                              ? "bg-red-500 text-white animate-pulse"
-                              : "bg-blue-500 text-white"
+                              ? "bg-danger text-brand-white animate-pulse"
+                              : "bg-info text-brand-white"
                           }`}
                         >
                           {match.fixture.status.long}
                           {match.fixture.status.elapsed && (
-                            <span className="ml-1">
+                            <span className="ml-1 font-data">
                               {match.fixture.status.elapsed}'
                             </span>
                           )}
                         </span>
                         {match.score.halftime.home !== null && (
-                          <p className="text-xs text-gray-400">
+                          <p className="text-xs font-data text-text-secondary">
                             HT: {match.score.halftime.home} -{" "}
                             {match.score.halftime.away}
                           </p>
@@ -293,7 +290,7 @@ export const LiveScore: React.FC = () => {
                     <div className="flex items-center gap-4 flex-1 justify-end">
                       <span
                         className={`font-semibold text-lg ${
-                          match.teams.away.winner ? "text-green-400" : ""
+                          match.teams.away.winner ? "text-success" : "text-text-primary"
                         }`}
                       >
                         {match.teams.away.name}
@@ -306,7 +303,7 @@ export const LiveScore: React.FC = () => {
                     </div>
 
                     {/* Time */}
-                    <div className="text-right text-gray-400 text-sm ml-6 min-w-[100px]">
+                    <div className="text-right font-data text-text-secondary text-sm ml-6 min-w-[100px]">
                       <p>
                         {new Date(match.fixture.date).toLocaleTimeString("en-US", {
                           hour: "2-digit",
@@ -323,12 +320,21 @@ export const LiveScore: React.FC = () => {
 
         {/* Empty State */}
         {fixtures.length === 0 && !loading && (
-          <div className="text-center py-12 bg-gray-800 rounded-lg">
-            <div className="text-6xl mb-4">⚽</div>
-            <p className="text-gray-400 text-lg mb-2">
+          <div className="text-center py-12 bg-surface-raised border border-border rounded-card">
+            <div className="w-16 h-16 mx-auto mb-4">
+              <svg viewBox="0 0 512 512" className="w-full h-full">
+                <circle cx="256" cy="256" r="256" fill="white" />
+                <circle cx="256" cy="256" r="192" fill="black" />
+                <polygon
+                  points="256,64 296,176 384,176 312,240 336,336 256,280 176,336 200,240 128,176 216,176"
+                  fill="white"
+                />
+              </svg>
+            </div>
+            <p className="text-text-secondary text-lg mb-2">
               No live matches at the moment
             </p>
-            <p className="text-gray-500 text-sm">
+            <p className="text-text-secondary text-sm">
               Check back later for live scores
             </p>
           </div>

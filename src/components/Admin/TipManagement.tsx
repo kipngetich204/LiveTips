@@ -1,4 +1,4 @@
-import  { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import { db } from "../../FirebaseConfig/firebase";
 import { onSnapshot, doc, setDoc } from "firebase/firestore";
 import { type FullFixture } from "../../types/livescore";
@@ -7,16 +7,15 @@ import {
   type DailyTipsDoc,
   type Prediction,
   type PredictionTier,
-  type MatchPredictions,
-} from "../../types/testingTips";
+  /* type MatchPredictions, */
+} from "../../types/tips";
 import { ErrorPage } from "../../pages/Error";
 
 const API_BASE_URL = "https://backend-livetips.onrender.com";
 
-type TierKey = keyof MatchPredictions; // "basic" | "premium" | "super_premium"
-type Summary = DailyTipsDoc["summary"];
+import { TIER_ORDER, type TierKey } from "../../utils/Tieraccess ";
 
-const TIER_ORDER: TierKey[] = ["basic", "premium", "super_premium"];
+type Summary = DailyTipsDoc["summary"];
 const TIER_COLORS: Record<TierKey, string> = {
   basic: "text-green-400",
   premium: "text-yellow-400",

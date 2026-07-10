@@ -4,15 +4,12 @@ import { useAuth } from "../context/AuthContext";
 import type {
   MatchPrediction,
   Prediction,
-} from "../types/testingTips";
+} from "../types/tips";
+import { type TierKey, TIER_ORDER, getAccessibleTiers } from "../utils/Tieraccess ";
 
-type TierKey = "basic" | "premium" | "super_premium";
-
-const TIER_ACCESS: Record<string, TierKey[]> = {
-  basic: ["basic"],
-  premium: ["basic", "premium"],
-  super_premium: ["basic", "premium", "super_premium"],
-  admin: ["basic", "premium", "super_premium"],
+type FilteredTip = MatchPrediction & {
+  tier: TierKey;
+  prediction: Prediction;
 };
 
 export const MarketsSidebar = () => {
@@ -30,13 +27,10 @@ export const MarketsSidebar = () => {
     fetchTips();
   }, []);
 
-  const allowedTiers: TierKey[] = useMemo(() => {
-    if (user?.isAdmin) {
-      return TIER_ACCESS.admin;
-    }
-
-    return TIER_ACCESS[user?.type ?? "basic"];
-  }, [user]);
+  const allowedTiers: TierKey[] = useMemo(
+    () => (user?.isAdmin ? TIER_ORDER : getAccessibleTiers(user?.type)),
+    [user],
+  );
 
   const markets = useMemo(() => {
     const unique = new Set<string>();
@@ -53,12 +47,7 @@ export const MarketsSidebar = () => {
   }, [tipsList, allowedTiers]);
 
   const filteredTips = useMemo(() => {
-    const list: Array<
-      MatchPrediction & {
-        tier: TierKey;
-        prediction: Prediction;
-      }
-    > = [];
+    const list: FilteredTip[] = [];
 
     tipsList.forEach((match) => {
       allowedTiers.forEach((tier) => {
@@ -78,8 +67,8 @@ export const MarketsSidebar = () => {
   }, [tipsList, allowedTiers, activeMarket]);
 
   return (
-    <div className="bg-gray-800 rounded-lg p-4">
-      <h2 className="text-yellow-400 text-xl font-bold mb-4">
+    <div className="bg-surface-raised border border-border rounded-card p-4">
+      <h2 className="text-text-primary text-xl font-bold mb-4">
         Markets
       </h2>
 
@@ -93,10 +82,10 @@ export const MarketsSidebar = () => {
                 prev === market ? null : market
               )
             }
-            className={`px-3 py-2 rounded whitespace-nowrap ${
+            className={`min-h-11 px-3 py-2 rounded-control whitespace-nowrap transition-colors ${
               activeMarket === market
-                ? "bg-yellow-400 text-black"
-                : "bg-gray-700 text-white"
+                ? "bg-brand-black text-brand-white dark:bg-brand-white dark:text-brand-black"
+                : "bg-surface-muted text-text-primary hover:bg-surface"
             }`}
           >
             {market}
@@ -114,10 +103,10 @@ export const MarketsSidebar = () => {
                 prev === market ? null : market
               )
             }
-            className={`cursor-pointer px-3 py-2 rounded ${
+            className={`cursor-pointer min-h-11 flex items-center px-3 py-2 rounded-control transition-colors ${
               activeMarket === market
-                ? "bg-yellow-400 text-black"
-                : "hover:bg-gray-700 text-white"
+                ? "bg-brand-black text-brand-white dark:bg-brand-white dark:text-brand-black"
+                : "hover:bg-surface-muted text-text-primary"
             }`}
           >
             {market}
@@ -127,41 +116,41 @@ export const MarketsSidebar = () => {
 
       {activeMarket && (
         <button
-          className="mb-4 w-full bg-gray-700 hover:bg-gray-600 rounded py-2"
+          className="mb-4 min-h-11 w-full bg-surface-muted hover:bg-surface border border-border text-text-primary rounded-control transition-colors"
           onClick={() => setActiveMarket(null)}
         >
           Clear Filter
         </button>
       )}
 
-      <h3 className="text-yellow-400 font-semibold mb-3">
+      <h3 className="text-text-primary font-semibold mb-3">
         {activeMarket ?? "All Markets"}
       </h3>
 
-      <div className="space-y-2 max-h-[500px] overflow-y-auto">
+      <div className="space-y-2 max-h-125 overflow-y-auto">
         {filteredTips.length === 0 ? (
-          <p className="text-gray-400 text-sm">
+          <p className="text-text-secondary text-sm">
             No predictions found.
           </p>
         ) : (
           filteredTips.map((tip) => (
             <div
               key={`${tip.id}-${tip.tier}-${tip.prediction.market}`}
-              className="bg-gray-700 rounded p-3"
+              className="bg-surface-muted rounded-control p-3"
             >
-              <p className="text-yellow-300 font-semibold">
+              <p className="text-text-primary font-semibold">
                 {tip.homeTeam} vs {tip.awayTeam}
               </p>
 
-              <p className="text-gray-300 text-sm mt-1">
+              <p className="text-text-secondary text-sm mt-1">
                 <strong>{tip.prediction.market}</strong>
               </p>
 
-              <p className="text-white">
+              <p className="text-text-primary">
                 {tip.prediction.prediction}
               </p>
 
-              <p className="text-xs text-gray-400 mt-1">
+              <p className="text-xs font-data text-text-secondary mt-1">
                 {tip.tier.replace("_", " ")} • {tip.prediction.confidence}%
               </p>
             </div>

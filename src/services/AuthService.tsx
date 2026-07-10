@@ -9,33 +9,63 @@ import {
   type User as FirebaseUser,
   type UserCredential
 } from 'firebase/auth';
-import { doc, setDoc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, setDoc, getDoc, updateDoc, serverTimestamp, Timestamp } from 'firebase/firestore';
 import { auth, googleProvider, db } from '../FirebaseConfig/firebase';
-import type { User, UserSession } from '../types/user';
+import { UserRole, UserStatus, type User, type UserSession } from '../types/user';
+import { getUserTier } from '../utils/Tieraccess ';
+
+// Accounts in these statuses are not allowed to sign in.
+const BLOCKED_STATUSES: UserStatus[] = [UserStatus.SUSPENDED, UserStatus.DELETED];
+
+// Firestore's serverTimestamp() resolves to a Timestamp object once read
+// back, but our User type commits to ISO strings everywhere. Normalize here
+// so callers never have to care which shape they're getting.
+function toISOString(value: unknown): string {
+  if (value instanceof Timestamp) return value.toDate().toISOString();
+  if (typeof value === 'string') return value;
+  return new Date().toISOString();
+}
 
 export class AuthService {
   private static sessionInterval: ReturnType<typeof setInterval> | null = null;
 
-  // Convert Firebase User to our User interface
+  // Convert Firebase User (+ Firestore doc, if any) into our User interface.
   static async convertFirebaseUser(firebaseUser: FirebaseUser): Promise<User> {
     const userDocRef = doc(db, 'users', firebaseUser.uid);
     const userDoc = await getDoc(userDocRef);
-    
     const userData = userDoc.exists() ? userDoc.data() : {};
-    
+
+    // role: trust a stored role if it's a known value; otherwise fall back to
+    // the legacy `isAdmin` flag, then finally to a plain user.
+    const role: UserRole = Object.values(UserRole).includes(userData.role)
+      ? userData.role
+      : userData.isAdmin
+        ? UserRole.ADMIN
+        : UserRole.USER;
+
+    // status: fall back to active for missing/unrecognized values.
+    const status: UserStatus = Object.values(UserStatus).includes(userData.status)
+      ? userData.status
+      : UserStatus.ACTIVE;
+
     return {
       uid: firebaseUser.uid,
       name: firebaseUser.displayName || firebaseUser.email?.split('@')[0] || 'User',
       email: firebaseUser.email || '',
       avatar: firebaseUser.photoURL || firebaseUser.email?.charAt(0).toUpperCase() || 'U',
-      photoURL: firebaseUser.photoURL || 'missing',
-      isAdmin: userData.isAdmin || false,
+      photoURL: firebaseUser.photoURL || null,
       emailVerified: firebaseUser.emailVerified,
       provider: firebaseUser.providerData[0]?.providerId.includes('google') ? 'google' : 'email',
-      createdAt: userData.createdAt || new Date().toISOString(),
+      createdAt: toISOString(userData.createdAt),
       lastLoginAt: new Date().toISOString(),
       sessionDuration: userData.sessionDuration || 0,
-      type: userData.type || 'basic'
+      // Normalize through tierAccess so any unknown/legacy value collapses
+      // to "basic" instead of silently granting a mismatched tier.
+      type: getUserTier(userData.type),
+      role,
+      status,
+      isAdmin: role === UserRole.ADMIN, // kept in sync with role; will be removed once callers migrate
+      subscription: userData.subscription || null
     };
   }
 
@@ -52,23 +82,43 @@ export class AuthService {
         avatar: user.avatar,
         photoURL: user.photoURL,
         lastLoginAt: serverTimestamp(),
-        emailVerified: user.emailVerified
+        emailVerified: user.emailVerified,
+        isAdmin: user.isAdmin,
+        type: user.type,
+        role: user.role,
+        status: user.status,
+        subscription: user.subscription
       });
     } else {
       // Create new user
       await setDoc(userDocRef, {
         uid: user.uid,
-        name:user.name,
+        name: user.name,
         email: user.email,
         avatar: user.avatar,
         photoURL: user.photoURL,
-        isAdmin: false,
+        isAdmin: user.isAdmin,
         emailVerified: user.emailVerified,
         provider: user.provider,
         createdAt: serverTimestamp(),
         lastLoginAt: serverTimestamp(),
-        sessionDuration: 0
+        sessionDuration: 0,
+        role: user.role,
+        type: user.type,
+        status: user.status,
+        subscription: user.subscription
       });
+    }
+  }
+
+  // Reject sign-in for suspended/deleted accounts before a session is started.
+  private static assertAccountIsActive(user: User): void {
+    if (BLOCKED_STATUSES.includes(user.status)) {
+      throw new Error(
+        user.status === UserStatus.SUSPENDED
+          ? 'This account has been suspended. Please contact support.'
+          : 'This account no longer exists.'
+      );
     }
   }
 
@@ -77,9 +127,10 @@ export class AuthService {
     try {
       // Configure auth settings
       auth.useDeviceLanguage();
-      
+
       const result: UserCredential = await signInWithPopup(auth, googleProvider);
       const user = await this.convertFirebaseUser(result.user);
+      this.assertAccountIsActive(user);
       await this.saveUserToFirestore(user);
       await this.startSession(user.uid);
       return user;
@@ -100,6 +151,7 @@ export class AuthService {
     try {
       const result: UserCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = await this.convertFirebaseUser(result.user);
+      this.assertAccountIsActive(user);
       await this.saveUserToFirestore(user);
       await this.startSession(user.uid);
       return user;
@@ -112,7 +164,7 @@ export class AuthService {
   static async signUpWithEmail(email: string, password: string): Promise<User> {
     try {
       const result: UserCredential = await createUserWithEmailAndPassword(auth, email, password);
-      
+
       // Update profile with name
       await updateProfile(result.user, {
         displayName: result.user.email
@@ -150,6 +202,13 @@ export class AuthService {
 
   // Start tracking user session
   static async startSession(uid: string): Promise<void> {
+    // Guard against a stray double-call leaving an orphaned interval running
+    // with no way to clear it (it would silently keep firing forever).
+    if (this.sessionInterval) {
+      clearInterval(this.sessionInterval);
+      this.sessionInterval = null;
+    }
+
     const sessionRef = doc(db, 'sessions', uid);
     const sessionStart = Date.now();
 
@@ -199,7 +258,7 @@ export class AuthService {
       // Update total session duration in user document
       const userRef = doc(db, 'users', uid);
       const userDoc = await getDoc(userRef);
-      
+
       if (userDoc.exists()) {
         const currentDuration = userDoc.data().sessionDuration || 0;
         await updateDoc(userRef, {
@@ -213,7 +272,7 @@ export class AuthService {
   static async getTotalSessionTime(uid: string): Promise<number> {
     const userRef = doc(db, 'users', uid);
     const userDoc = await getDoc(userRef);
-    
+
     if (userDoc.exists()) {
       return userDoc.data().sessionDuration || 0;
     }
@@ -275,6 +334,8 @@ export class AuthService {
       case 'auth/network-request-failed':
         return 'Network error. Please check your connection';
       default:
+        // assertAccountIsActive throws plain Errors with a user-facing
+        // message already, so just pass those through unchanged.
         return error.message || 'An error occurred during authentication';
     }
   }

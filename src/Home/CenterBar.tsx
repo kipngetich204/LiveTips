@@ -1,34 +1,37 @@
-import { type MatchPrediction } from "../types/testingTips";
+// TodayTips.tsx (center)
+import { type MatchPrediction } from "../types/tips";
+import { useAuth } from "../context/AuthContext";
+
 interface TodayTipsProps {
   tips: MatchPrediction[];
 }
 
-import { useAuth } from "../context/AuthContext";
-
 export const TodayTips = ({ tips }: TodayTipsProps) => {
   const { user } = useAuth();
   return (
-    <div className="bg-gray-800 rounded-lg pt-0 p-4">
-      <h2 className="text-yellow-400 font-bold mb-4 text-center">Today's Tips</h2>
+    <div className="bg-surface-raised rounded-card pt-0 p-4 border border-border">
+      <h2 className="text-text-primary font-bold mb-4 text-center">Today's Tips</h2>
       {tips.length === 0 ? (
-        <p className="text-gray-300 text-center">No tips available today.</p>
+        <p className="text-text-secondary text-center">No tips available today.</p>
       ) : (
         <table className="w-full text-left border-collapse">
           <thead>
-            <tr className="bg-yellow-400 text-gray-900">
-              <th className="py-2 px-3">Time</th>
-              <th className="py-2 px-3">Home</th>
-              <th className="py-2 px-3">Away</th>
-              <th className="py-2 px-3">Prediction</th>
+            <tr className="bg-surface-muted text-text-secondary text-xs uppercase tracking-wide border-b border-border">
+              <th className="py-2 px-3 font-semibold">Time</th>
+              <th className="py-2 px-3 font-semibold">Home</th>
+              <th className="py-2 px-3 font-semibold">Away</th>
+              <th className="py-2 px-3 font-semibold">Prediction</th>
             </tr>
           </thead>
           <tbody>
             {tips.map((tip) => (
-              <tr key={tip.id} className="odd:bg-gray-900 even:bg-gray-700 hover:bg-gray-600 transition">
-                <td className="py-2 px-3">{tip.time}</td>
-                <td className="py-2 px-3 text-yellow-300 font-semibold">{tip.homeTeam}</td>
-                <td className="py-2 px-3">{tip.awayTeam}</td>
-                <td className="py-2 px-3 text-green-400">{user?.type === "premium" ? tip.predictions.premium.predictions[0]?.prediction : tip.predictions.basic.predictions[0]?.prediction}</td>
+              <tr key={tip.id} className="odd:bg-surface even:bg-surface-raised hover:bg-surface-muted transition-colors border-b border-border last:border-0">
+                <td className="py-2 px-3 font-data text-text-secondary">{tip.time}</td>
+                <td className="py-2 px-3 text-text-primary font-semibold">{tip.homeTeam}</td>
+                <td className="py-2 px-3 text-text-primary">{tip.awayTeam}</td>
+                <td className="py-2 px-3 text-text-primary font-medium">
+                  {user?.type === "premium" ? tip.predictions.premium.predictions[0]?.prediction : tip.predictions.basic.predictions[0]?.prediction}
+                </td>
               </tr>
             ))}
           </tbody>

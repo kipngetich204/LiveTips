@@ -1,5 +1,5 @@
 import { useState, type KeyboardEvent } from "react";
-import { AuthService } from "../../services/auth-service";
+import { AuthService } from "../../services/AuthService";
 interface ResetPasswordProps {
   onSwitchToSignIn: () => void;
   onClose: () => void;

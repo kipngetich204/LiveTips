@@ -1,5 +1,5 @@
 import React, { useState, type ChangeEvent, type KeyboardEvent } from "react";
-import { AuthService } from "../../services/auth-service";
+import { AuthService } from "../../services/AuthService";
 import type { User } from "../../types/user";
 
 // ===================================
