@@ -6,7 +6,7 @@ type RiskLevel = "Low" | "Medium" | "High";
 
 type MatchImportance = "Low" | "Medium" | "High" | "Critical";
 
-type Market = string;
+//type Market = string;
 
 interface WinProbabilities {
   home: number;

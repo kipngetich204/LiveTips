@@ -196,6 +196,7 @@ async function updateTipInFirestore(
   matches: MatchPrediction[]
 ) {
   const tipRef = doc(db, "dailyTips", docId);
+  console.log(`Updating Firestore doc ${docId} for tip ${tipId} with ${matches.length} matches`);
   await updateDoc(tipRef, { matches });
 }
 
